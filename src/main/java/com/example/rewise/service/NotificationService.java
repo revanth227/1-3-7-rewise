@@ -7,6 +7,7 @@ import com.example.rewise.repo.NotificationRepo;
 import com.example.rewise.repo.TopicRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +29,8 @@ public class NotificationService {
         return notificationList;
     }
 
-    public List<NotificationResponse> history() {
-        List<Notification> notifications = notificationRepo.findByIsSent(true);
+    public Page<NotificationResponse> history(Pageable pageable) {
+        Page<Notification> notifications = notificationRepo.findByIsSent(true,pageable);
         List<NotificationResponse> notificationList = new ArrayList<>();
         for (Notification notification : notifications) {
             NotificationResponse notificationResponse = new NotificationResponse();
@@ -45,6 +46,6 @@ public class NotificationService {
             notificationList.add(notificationResponse);
 
         }
-        return notificationList;
+        return new PageImpl<NotificationResponse>(notificationList,pageable,notifications.getTotalElements());
     }
 }

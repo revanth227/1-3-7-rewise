@@ -19,7 +19,7 @@ public interface NotificationRepo extends JpaRepository<Notification,Long> {
 
     List<Notification> findByActiveAndIsSent(boolean active,boolean isSent);
 
-    List<Notification> findByIsSent(boolean b);
+    Page<Notification> findByIsSent(boolean b,Pageable pageable);
 
     Topic findByTopicId(Long topicId);
 }

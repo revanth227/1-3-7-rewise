@@ -9,8 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 public class NotificationController {
     @Autowired
@@ -22,7 +20,7 @@ public class NotificationController {
     }
 
     @GetMapping("/notifications/history")
-    public List<NotificationResponse> notificationList(){
-        return notificationService.history();
+    public Page<NotificationResponse> notificationList(Pageable pageable){
+        return notificationService.history(pageable);
     }
 }
