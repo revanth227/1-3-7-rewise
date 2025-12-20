@@ -4,7 +4,10 @@ import com.example.rewise.dto.RequestDto;
 import com.example.rewise.dto.ResponseDto;
 import com.example.rewise.service.TopicService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+
 
 import java.util.List;
 
@@ -15,8 +18,8 @@ public class TopicController {
 
 
     @GetMapping("/topics")
-    public List<ResponseDto> getAllTopics() {
-        return topicService.getAll();
+    public Page<ResponseDto> getAllTopics(Pageable pageable) {
+        return topicService.getAll(pageable);
     }
 
 
@@ -46,7 +49,7 @@ public class TopicController {
     }
 
     @GetMapping("/go")
-    public List<ResponseDto> todayPending(){
+    public List<ResponseDto> todayPending() {
         return topicService.allPendingList();
 
     }

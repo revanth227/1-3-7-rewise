@@ -6,11 +6,14 @@ import com.example.rewise.entity.Topic;
 import com.example.rewise.repo.NotificationRepo;
 import com.example.rewise.repo.TopicRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NotificationService {
@@ -19,13 +22,10 @@ public class NotificationService {
     @Autowired
     private TopicRepo topicRepo;
 
-    public List<Notification> getTodayNotifications() {
+    public Page<Notification> getTodayNotifications(Pageable pageable) {
         LocalDate localDate = LocalDate.now();
-        List<Notification> notificationList = notificationRepo.findByNotifyDateAndIsSent(localDate, false);
-        List<Notification> notificationList1 = new ArrayList<>();
-
-        notificationList1.addAll(notificationList);
-        return notificationList1;
+        Page<Notification> notificationList = notificationRepo.findByNotifyDateAndIsSent(localDate, false,pageable);
+        return notificationList;
     }
 
     public List<NotificationResponse> history() {
@@ -33,9 +33,12 @@ public class NotificationService {
         List<NotificationResponse> notificationList = new ArrayList<>();
         for (Notification notification : notifications) {
             NotificationResponse notificationResponse = new NotificationResponse();
-            Topic topic = topicRepo.findByTopicId(notification.getTopicId());
-            notificationResponse.setTopicTitle(topic.getTitle());
-            notificationResponse.setSubject(topic.getSubject());
+            Optional<Topic> topic = topicRepo.findById(notification.getTopicId());
+            if(topic.isEmpty()){
+                throw new RuntimeException("No topic found");
+            }
+            notificationResponse.setTopicTitle(topic.get().getTitle());
+            notificationResponse.setSubject(topic.get().getSubject());
             notificationResponse.setSentAt(notification.getSentAt());
             notificationResponse.setNotifyDate(notification.getNotifyDate());
             notificationResponse.setMessage(notification.getMessage());

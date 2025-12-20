@@ -7,6 +7,9 @@ import com.example.rewise.entity.Topic;
 import com.example.rewise.repo.NotificationRepo;
 import com.example.rewise.repo.TopicRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,22 +25,27 @@ public class TopicService {
     private NotificationRepo notificationRepo;
 
 
-    public List<ResponseDto> getAll() {
-        List<ResponseDto> responseDtoList = new ArrayList<>();
-        List<Topic> topicList = topicRepo.findAll();
-        for (Topic topic : topicList) {
-            ResponseDto responseDto = new ResponseDto();
-            responseDto.setTitle(topic.getTitle());
-            responseDto.setSubject(topic.getSubject());
-            responseDto.setCreatedDate(topic.getCreatedDate());
-            responseDto.setRevise3Date(topic.getRevise3Date());
-            responseDto.setRevise7Date(topic.getRevise7Date());
-            responseDto.setRevised3(topic.isRevised3());
-            responseDto.setRevised7(topic.isRevised7());
-            responseDto.setCompleted(topic.isCompleted());
-            responseDtoList.add(responseDto);
+    public Page<ResponseDto> getAll(Pageable pageable) {
+
+        Page<Topic> topicPage = topicRepo.findAll(pageable);
+
+        List<ResponseDto> dtoList = new ArrayList<>();
+
+        for (Topic topic : topicPage.getContent()) {
+            ResponseDto dto = new ResponseDto();
+            dto.setTitle(topic.getTitle());
+            dto.setSubject(topic.getSubject());
+            dto.setCreatedDate(topic.getCreatedDate());
+            dto.setRevise3Date(topic.getRevise3Date());
+            dto.setRevise7Date(topic.getRevise7Date());
+            dto.setRevised3(topic.isRevised3());
+            dto.setRevised7(topic.isRevised7());
+            dto.setCompleted(topic.isCompleted());
+            dtoList.add(dto);
         }
-        return responseDtoList;
+
+
+        return new PageImpl<ResponseDto>(dtoList, pageable, topicPage.getTotalElements());
     }
 
     public ResponseDto create(RequestDto requestDto) {
@@ -161,3 +169,10 @@ public class TopicService {
         return responseDtos;
     }
 }
+
+
+
+
+
+
+

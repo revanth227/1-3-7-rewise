@@ -6,15 +6,19 @@ reWise is a modern Spring Boot application built with Java 17 and Spring Boot 3.
 
 ## 🚀 Version Information
 
-- **Current Version:** 1.3.4
+- **Current Version:** 1.3.7
 - **Spring Boot Version:** 3.5.7
 - **Java Version:** 17
 - **Build Tool:** Maven
+- **Last Updated:** 2025-12-16
 
 ### Version History
-- **v1.3.4** - Current stable release with enhanced security and database optimization
-- **v1.3.x** - Security enhancements and performance improvements
-- **v1.x.x** - Initial release with core functionality
+| Version | Date | Changes |
+|---------|------|---------|
+| **v1.3.7** | 2025-12-16 | Enhanced database configuration with HikariCP pooling, improved logging, and DevTools integration |
+| **v1.3.4** | TBD | Enhanced security and database optimization |
+| **v1.3.x** | TBD | Security enhancements and performance improvements |
+| **v1.x.x** | TBD | Initial release with core functionality |
 
 ## 🛠️ Technology Stack
 
@@ -56,20 +60,63 @@ Before running this application, ensure you have:
 
 1. **Create MySQL Database:**
    ```sql
-   CREATE DATABASE rewise_dev_db;
-   CREATE USER 'root'@'localhost' IDENTIFIED BY 'password';
-   GRANT ALL PRIVILEGES ON rewise_dev_db.* TO 'root'@'localhost';
+   CREATE DATABASE rewise;
+   CREATE USER 'root'@'localhost' IDENTIFIED BY 'Revanth@0883';
+   GRANT ALL PRIVILEGES ON rewise.* TO 'root'@'localhost';
    FLUSH PRIVILEGES;
    ```
 
 2. **Database Configuration:**
    - Host: `localhost:3306`
-   - Database: `rewise_dev_db`
+   - Database: `rewise`
    - Username: `root`
-   - Password: `password`
+   - Password: `Revanth@0883`
+   - Driver: `com.mysql.cj.jdbc.Driver`
+
+### Database Properties Configuration
+
+The application uses the following database properties (from `application.properties`):
+
+```properties
+# Database Connection
+spring.datasource.url=jdbc:mysql://localhost:3306/rewise?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.username=root
+spring.datasource.password=Revanth@0883
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# HikariCP Connection Pool Configuration
+spring.datasource.hikari.maximum-pool-size=20        # Maximum connections in pool
+spring.datasource.hikari.minimum-idle=5              # Minimum idle connections
+spring.datasource.hikari.idle-timeout=300000         # 5 minutes idle timeout
+spring.datasource.hikari.connection-timeout=20000    # 20 seconds connection timeout
+
+# JPA/Hibernate Configuration
+spring.jpa.hibernate.ddl-auto=update                 # Auto-update schema
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.show-sql=true                             # Log SQL queries
+spring.jpa.properties.hibernate.format_sql=true      # Format SQL output
+spring.jpa.properties.hibernate.use_sql_comments=true
+spring.jpa.properties.hibernate.jdbc.batch_size=20   # Batch insert/update size
+spring.jpa.properties.hibernate.order_inserts=true   # Order INSERT statements
+spring.jpa.properties.hibernate.order_updates=true   # Order UPDATE statements
+```
+
+### Connection Pool Details
+
+| Property | Value | Description |
+|----------|-------|-------------|
+| **Maximum Pool Size** | 20 | Max concurrent database connections |
+| **Minimum Idle** | 5 | Min idle connections maintained |
+| **Idle Timeout** | 300,000 ms (5 min) | Time before idle connection is closed |
+| **Connection Timeout** | 20,000 ms (20 sec) | Max wait time for connection |
 
 ### Production Environment
-For production deployment, create a separate database `rewise` and update the configuration accordingly.
+For production deployment:
+1. Create a separate database instance
+2. Update `application-prod.properties` with production credentials
+3. Increase connection pool size based on expected load
+4. Set `spring.jpa.hibernate.ddl-auto=validate` (do not auto-update schema)
+5. Disable SQL logging for performance
 
 ## 🚀 Getting Started
 
@@ -143,6 +190,37 @@ Switch between environments by setting:
 spring.profiles.active=dev  # or prod
 ```
 
+### Logging Configuration
+
+The application includes comprehensive logging setup:
+
+```properties
+# Application Logging
+logging.level.com.example.rewise=DEBUG
+logging.level.org.springframework.security=DEBUG
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+
+# Log Patterns
+logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} - %msg%n
+logging.pattern.file=%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+```
+
+### Development Tools
+
+```properties
+# Spring DevTools Configuration
+spring.devtools.restart.enabled=true
+spring.devtools.livereload.enabled=true
+spring.devtools.restart.additional-paths=src/main/java
+
+# Error Handling
+server.error.include-message=always
+server.error.include-binding-errors=always
+server.error.include-stacktrace=on_param
+server.error.include-exception=false
+```
+
 ## 🔒 Security Features
 
 - **Authentication:** Basic Auth (development) / JWT (production ready)
@@ -158,6 +236,11 @@ The application includes comprehensive logging:
 - **File Logging:** Structured logs for production
 - **SQL Logging:** Hibernate query logging (development)
 - **Security Logging:** Authentication and authorization events
+
+**Log Levels:**
+- `DEBUG` - Application and security events
+- `DEBUG` - Hibernate SQL queries
+- `TRACE` - SQL parameter binding details
 
 ## 🧪 Testing
 
@@ -188,12 +271,33 @@ java -jar target/rewise-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 
 As the project expands, planned features include:
 - JWT-based authentication
-- RESTful API documentation with Swagger
+- RESTful API documentation with Swagger/OpenAPI
 - Caching with Redis
 - Message queuing with RabbitMQ
 - Microservices architecture
 - Docker containerization
 - CI/CD pipeline integration
+- Database migration tools (Flyway/Liquibase)
+- Enhanced monitoring and metrics
+
+## 📋 Commit Guidelines
+
+When making commits to this repository, please follow these guidelines:
+
+1. **Update Version:** Update the version in `pom.xml` and README.md if making significant changes
+2. **Database Changes:** Document any database schema changes in commit messages
+3. **Configuration Changes:** Note any new properties added to `application.properties`
+4. **Update README:** Keep the Version History table updated with commit dates and changes
+
+### Commit Message Format
+```
+[FEATURE/BUGFIX/DOCS] Brief description
+
+- Detailed change 1
+- Detailed change 2
+- Database changes (if any)
+- Configuration updates (if any)
+```
 
 ## 🤝 Contributing
 
@@ -214,6 +318,17 @@ For support and questions:
 - Contact the development team
 - Check the documentation in the `/docs` folder
 
+## 🔄 Updating the README
+
+This README is designed to be easily maintainable across commits:
+
+1. **Version History Table:** Add new rows with each significant commit
+2. **Database Properties:** Update if connection pool or Hibernate settings change
+3. **Configuration Section:** Add new properties as they're introduced
+4. **Future Enhancements:** Move completed items to relevant sections
+
 ---
 
 **Note:** This README will be updated as the project expands with new features and capabilities. Always refer to the latest version for accurate information.
+
+**Last Updated:** 2025-12-16 | **Current Version:** 1.3.7
