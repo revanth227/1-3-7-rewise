@@ -4,12 +4,12 @@ import com.example.rewise.dto.RequestDto;
 import com.example.rewise.dto.ResponseDto;
 import com.example.rewise.entity.Notification;
 import com.example.rewise.entity.Topic;
+import com.example.rewise.exceptions.NoPageFound;
+import com.example.rewise.exceptions.TopicNotFound;
 import com.example.rewise.repo.NotificationRepo;
 import com.example.rewise.repo.TopicRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,9 +25,16 @@ public class TopicService {
     private NotificationRepo notificationRepo;
 
 
-    public Page<ResponseDto> getAll(Pageable pageable) {
+    public Page<ResponseDto> getAll(int page, int size, String sortField, String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortField).descending() : Sort.by(sortField).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Topic> topicPage = topicRepo.findAll(pageable);
+        if (page >= topicPage.getTotalPages() && topicPage.getTotalPages() > 0) {
+            throw new NoPageFound("Requested page does not exist");
+        }
 
         List<ResponseDto> dtoList = new ArrayList<>();
 
@@ -44,9 +51,9 @@ public class TopicService {
             dtoList.add(dto);
         }
 
-
-        return new PageImpl<ResponseDto>(dtoList, pageable, topicPage.getTotalElements());
+        return new PageImpl<>(dtoList, pageable, topicPage.getTotalElements());
     }
+
 
     public ResponseDto create(RequestDto requestDto) {
         Topic topic = new Topic();
@@ -69,17 +76,17 @@ public class TopicService {
         return getResponseDto(topic1);
     }
 
-    public List<ResponseDto> getTodayTasks() {
+    public Page<ResponseDto> getTodayTasks(Pageable pageable) {
         List<ResponseDto> responseDtoList = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
-        List<Topic> topic = topicRepo.findAll();
+        Page<Topic> topic = topicRepo.findAll(pageable);
         for (Topic topics : topic) {
             if (topics.getRevise3Date().equals(currentDate) || topics.getRevise7Date().equals(currentDate)) {
                 ResponseDto responseDto = getResponseDto(topics);
                 responseDtoList.add(responseDto);
             }
         }
-        return responseDtoList;
+        return new PageImpl<>(responseDtoList, pageable, topic.getTotalElements());
     }
 
     private static ResponseDto getResponseDto(Topic topics) {
@@ -109,7 +116,7 @@ public class TopicService {
     public ResponseDto updateIsRevised(Long id, int day) {
         Optional<Topic> updatedDate = topicRepo.findById(id);
         if (updatedDate.isEmpty()) {
-            throw new RuntimeException("No topic had that");
+            throw new TopicNotFound("No topic Found " + id);
         }
         Topic topic = updatedDate.get();
         if (day == 3) {
@@ -122,7 +129,6 @@ public class TopicService {
         if (topic.isRevised3() && topic.isRevised7()) {
             topic.setCompleted(true);
         }
-        topicRepo.save(topic);
 
 
         return getResponseDto(updatedDate.get());
@@ -141,7 +147,7 @@ public class TopicService {
     public ResponseDto getTheTopic(Long id) {
         Optional<Topic> topicOptional = topicRepo.findById(id);
         if (topicOptional.isEmpty()) {
-            throw new RuntimeException("No Id found");
+            throw new TopicNotFound("No topic found with the id " + id);
         }
         Topic topic = topicOptional.get();
         return getResponseDto(topic);

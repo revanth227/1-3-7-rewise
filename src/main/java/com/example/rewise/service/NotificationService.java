@@ -25,8 +25,7 @@ public class NotificationService {
 
     public Page<Notification> getTodayNotifications(Pageable pageable) {
         LocalDate localDate = LocalDate.now();
-        Page<Notification> notificationList = notificationRepo.findByNotifyDateAndIsSent(localDate, false,pageable);
-        return notificationList;
+        return notificationRepo.findByNotifyDateAndIsSent(localDate, false,pageable);
     }
 
     public Page<NotificationResponse> history(Pageable pageable) {
