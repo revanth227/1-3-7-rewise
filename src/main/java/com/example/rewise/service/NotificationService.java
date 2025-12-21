@@ -31,7 +31,7 @@ public class NotificationService {
     public Page<NotificationResponse> history(Pageable pageable) {
         Page<Notification> notifications = notificationRepo.findByIsSent(true,pageable);
         List<NotificationResponse> notificationList = new ArrayList<>();
-        for (Notification notification : notifications) {
+        for (Notification notification : notifications.getContent()) {
             NotificationResponse notificationResponse = new NotificationResponse();
             Optional<Topic> topic = topicRepo.findById(notification.getTopicId());
             if(topic.isEmpty()){
