@@ -73,6 +73,7 @@ public class TopicService {
         Notification notification7 = createNotification(topic1.getId(), topic1.getRevise7Date(), "7 - day revision :" + topic1.getTitle() + " " + topic1.getRevise7Date());
 
         notificationRepo.save(notification7);
+        topicRepo.save(topic);
         return getResponseDto(topic1);
     }
 
@@ -80,7 +81,7 @@ public class TopicService {
         List<ResponseDto> responseDtoList = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
         Page<Topic> topic = topicRepo.findAll(pageable);
-        for (Topic topics : topic) {
+        for (Topic topics : topic.getContent()) {
             if (topics.getRevise3Date().equals(currentDate) || topics.getRevise7Date().equals(currentDate)) {
                 ResponseDto responseDto = getResponseDto(topics);
                 responseDtoList.add(responseDto);
@@ -138,7 +139,7 @@ public class TopicService {
     public String removeById(long id) {
         Optional<Topic> topic = topicRepo.findById(id);
         if (topic.isEmpty()) {
-            throw new RuntimeException("No Topic Found To Delete");
+            throw new TopicNotFound("No Topic Found To Delete");
         }
         return " Deleted Successfully";
     }
