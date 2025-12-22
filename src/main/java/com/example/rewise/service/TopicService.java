@@ -8,10 +8,12 @@ import com.example.rewise.exceptions.NoPageFound;
 import com.example.rewise.exceptions.TopicNotFound;
 import com.example.rewise.repo.NotificationRepo;
 import com.example.rewise.repo.TopicRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +25,20 @@ public class TopicService {
     private TopicRepo topicRepo;
     @Autowired
     private NotificationRepo notificationRepo;
+    private final Clock clock;
+
+    public TopicService(Clock clock) {
+        this.clock = clock;
+    }
+
+
+    public List<ResponseDto> getAllByUserId() {
+        Long userId = 1L;
+        return topicRepo.findByUserId(userId)
+                .stream()
+                .map(this::getResponseDto)
+                .toList();
+    }
 
 
     public Page<ResponseDto> getAll(int page, int size, String sortField, String direction) {
@@ -55,25 +71,27 @@ public class TopicService {
     }
 
 
+    @Transactional
     public ResponseDto create(RequestDto requestDto) {
         Topic topic = new Topic();
+        LocalDate today = LocalDate.now(clock);
+        topic.setUserId(1L);
         topic.setTitle(requestDto.getTitle());
         topic.setSubject(requestDto.getSubject());
-        topic.setCreatedDate(LocalDate.now());
-        topic.setRevise3Date(LocalDate.now().plusDays(3));
-        topic.setRevise7Date(LocalDate.now().plusDays(7));
+        topic.setCreatedDate(today);
+        topic.setRevise3Date(today.plusDays(3));
+        topic.setRevise7Date(today.plusDays(7));
         topic.setRevised3(false);
         topic.setRevised7(false);
         topic.setCompleted(false);
         Topic topic1 = topicRepo.save(topic);
-        Notification notification3 = createNotification(topic1.getId(), topic1.getRevise3Date(), "3 - day revision : " + topic1.getTitle() + " " + topic1.getRevise3Date());
+        Notification notification3 = createNotification(topic1.getId(), topic1.getRevise3Date(), "3 - day revision : " + topic1.getTitle() + " " + topic1.getRevise3Date(), 1L);
 
         notificationRepo.save(notification3);
 
-        Notification notification7 = createNotification(topic1.getId(), topic1.getRevise7Date(), "7 - day revision :" + topic1.getTitle() + " " + topic1.getRevise7Date());
+        Notification notification7 = createNotification(topic1.getId(), topic1.getRevise7Date(), "7 - day revision :" + topic1.getTitle() + " " + topic1.getRevise7Date(), 1L);
 
         notificationRepo.save(notification7);
-        topicRepo.save(topic);
         return getResponseDto(topic1);
     }
 
@@ -90,21 +108,10 @@ public class TopicService {
         return new PageImpl<>(responseDtoList, pageable, topic.getTotalElements());
     }
 
-    private static ResponseDto getResponseDto(Topic topics) {
-        ResponseDto responseDto = new ResponseDto();
-        responseDto.setTitle(topics.getTitle());
-        responseDto.setSubject(topics.getSubject());
-        responseDto.setCreatedDate(topics.getCreatedDate());
-        responseDto.setRevise3Date(topics.getRevise3Date());
-        responseDto.setRevise7Date(topics.getRevise7Date());
-        responseDto.setRevised3(topics.isRevised3());
-        responseDto.setRevised7(topics.isRevised7());
-        responseDto.setCompleted(topics.isCompleted());
-        return responseDto;
-    }
 
-    private Notification createNotification(Long topicId, LocalDate date, String message) {
+    private Notification createNotification(Long topicId, LocalDate date, String message, Long userId) {
         Notification n = new Notification();
+        n.setUserId(userId);
         n.setTopicId(topicId);
         n.setNotifyDate(date);
         n.setMessage(message);
@@ -174,6 +181,19 @@ public class TopicService {
             }
         }
         return responseDtos;
+    }
+
+    private ResponseDto getResponseDto(Topic topics) {
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setTitle(topics.getTitle());
+        responseDto.setSubject(topics.getSubject());
+        responseDto.setCreatedDate(topics.getCreatedDate());
+        responseDto.setRevise3Date(topics.getRevise3Date());
+        responseDto.setRevise7Date(topics.getRevise7Date());
+        responseDto.setRevised3(topics.isRevised3());
+        responseDto.setRevised7(topics.isRevised7());
+        responseDto.setCompleted(topics.isCompleted());
+        return responseDto;
     }
 }
 

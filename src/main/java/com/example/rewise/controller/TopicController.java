@@ -31,6 +31,11 @@ public class TopicController {
         return topicService.getAll(page, size, sort, direction);
     }
 
+    @GetMapping("/user")
+    public List<ResponseDto> getAllByUserId() {
+        return topicService.getAllByUserId();
+    }
+
 
     @PostMapping("/add")
     public ResponseDto createTopic(@RequestBody RequestDto requestDto) {

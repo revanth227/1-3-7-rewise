@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.apache.catalina.User;
 
 import java.time.LocalDate;
 
@@ -28,6 +29,15 @@ public class Topic {
     private boolean isRevised3;
     private boolean isRevised7;
     private boolean isCompleted;
+    private Long userId;
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
     public Topic() {
     }

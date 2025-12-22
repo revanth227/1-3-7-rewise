@@ -19,6 +19,17 @@ public class Notification {
     private boolean active;
     private LocalDate sentAt;
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    private Long userId;
+
+
     public boolean isActive() {
         return active;
     }

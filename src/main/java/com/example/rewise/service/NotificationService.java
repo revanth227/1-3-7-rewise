@@ -3,6 +3,7 @@ package com.example.rewise.service;
 import com.example.rewise.dto.NotificationResponse;
 import com.example.rewise.entity.Notification;
 import com.example.rewise.entity.Topic;
+import com.example.rewise.exceptions.NoItems;
 import com.example.rewise.repo.NotificationRepo;
 import com.example.rewise.repo.TopicRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,19 +24,29 @@ public class NotificationService {
     private NotificationRepo notificationRepo;
     @Autowired
     private TopicRepo topicRepo;
+    private final Clock clock;
+
+    public NotificationService(Clock clock) {
+        this.clock = clock;
+    }
 
     public Page<Notification> getTodayNotifications(Pageable pageable) {
-        LocalDate localDate = LocalDate.now();
-        return notificationRepo.findByNotifyDateAndIsSent(localDate, false,pageable);
+        LocalDate localDate = LocalDate.now(clock);
+        Page<Notification> notificationPage = notificationRepo.findByNotifyDateAndIsSent(localDate, false, pageable);
+        notificationPage.getContent();
+        if (notificationPage.isEmpty()) {
+            throw new NoItems("No Notifications to display");
+        }
+        return notificationPage;
     }
 
     public Page<NotificationResponse> history(Pageable pageable) {
-        Page<Notification> notifications = notificationRepo.findByIsSent(true,pageable);
+        Page<Notification> notifications = notificationRepo.findByIsSent(true, pageable);
         List<NotificationResponse> notificationList = new ArrayList<>();
         for (Notification notification : notifications.getContent()) {
             NotificationResponse notificationResponse = new NotificationResponse();
             Optional<Topic> topic = topicRepo.findById(notification.getTopicId());
-            if(topic.isEmpty()){
+            if (topic.isEmpty()) {
                 throw new RuntimeException("No topic found");
             }
             notificationResponse.setTopicTitle(topic.get().getTitle());
@@ -45,6 +57,6 @@ public class NotificationService {
             notificationList.add(notificationResponse);
 
         }
-        return new PageImpl<NotificationResponse>(notificationList,pageable,notifications.getTotalElements());
+        return new PageImpl<NotificationResponse>(notificationList, pageable, notifications.getTotalElements());
     }
 }
