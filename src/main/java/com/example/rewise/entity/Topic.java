@@ -1,14 +1,11 @@
 package com.example.rewise.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import org.apache.catalina.User;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 public class Topic {
@@ -29,15 +26,30 @@ public class Topic {
     private boolean isRevised3;
     private boolean isRevised7;
     private boolean isCompleted;
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+    @OneToMany(mappedBy ="topic")
+    private List<Notification> notificationList;
 
-    public Long getUserId() {
-        return userId;
+
+
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
+
+    public List<Notification> getNotificationList() {
+        return notificationList;
+    }
+
+    public void setNotificationList(List<Notification> notificationList) {
+        this.notificationList = notificationList;
+    }
+
 
     public Topic() {
     }

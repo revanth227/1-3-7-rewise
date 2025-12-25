@@ -2,6 +2,7 @@ package com.example.rewise.repo;
 
 import com.example.rewise.entity.Notification;
 import com.example.rewise.entity.Topic;
+import com.example.rewise.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,6 +21,9 @@ public interface NotificationRepo extends JpaRepository<Notification,Long> {
     List<Notification> findByActiveAndIsSent(boolean active,boolean isSent);
 
     Page<Notification> findByIsSent(boolean b,Pageable pageable);
+
+    Page<Notification> findByUserAndNotifyDateAndIsSent(User user, LocalDate date, boolean isSent, Pageable pageable);
+    Page<Notification> findByUserAndIsSent(User user, boolean isSent, Pageable pageable);
 
     Topic findByTopicId(Long topicId);
 }

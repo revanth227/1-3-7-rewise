@@ -2,10 +2,10 @@ package com.example.rewise.controller;
 
 import com.example.rewise.dto.RequestDto;
 import com.example.rewise.dto.ResponseDto;
+import com.example.rewise.entity.User;
 import com.example.rewise.service.TopicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public class TopicController {
 
 
     @GetMapping("/topics")
-    public Page<ResponseDto> getAll(
+    public List<ResponseDto> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "createdDate") String sort,
@@ -28,7 +28,7 @@ public class TopicController {
         if (size <= 0 || size > 50) {
             throw new IllegalArgumentException("Page size must be between 1 and 50");
         }
-        return topicService.getAll(page, size, sort, direction);
+        return topicService.getAllByUserId();
     }
 
     @GetMapping("/user")
@@ -43,15 +43,15 @@ public class TopicController {
     }
 
     @GetMapping("/today")
-    public Page<ResponseDto> findTodayPending(Pageable pageable) {
+    public List<ResponseDto> findTodayPending() {
 
 
-        return topicService.getTodayTasks(pageable);
+        return topicService.getTodayTasks();
     }
 
     @PutMapping("/topics/{id}/revision/{day}")
     public ResponseDto update(@PathVariable Long id, @PathVariable int day) {
-        return topicService.updateIsRevised(id, day);     //put/id
+        return topicService.updateIsRevised(id, day);
     }
 
     @DeleteMapping("delete/{id}")

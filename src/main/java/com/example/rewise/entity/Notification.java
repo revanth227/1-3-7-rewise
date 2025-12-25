@@ -1,9 +1,6 @@
 package com.example.rewise.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
@@ -12,22 +9,19 @@ public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long topicId;
     private String message;
     private LocalDate notifyDate;
     private boolean isSent;
     private boolean active;
     private LocalDate sentAt;
+    @ManyToOne
+    @JoinColumn(name = "topic_id")
+    private Topic topic;
+    @ManyToOne
+    @JoinColumn(name = "users_id")
+    private User user;
 
-    public Long getUserId() {
-        return userId;
-    }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    private Long userId;
 
 
     public boolean isActive() {
@@ -42,13 +36,6 @@ public class Notification {
         this.sentAt = sentAt;
     }
 
-    public Long getTopicId() {
-        return topicId;
-    }
-
-    public void setTopicId(Long topicId) {
-        this.topicId = topicId;
-    }
 
     public String getMessage() {
         return message;
@@ -76,5 +63,29 @@ public class Notification {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Topic getTopic() {
+        return topic;
+    }
+
+    public void setTopic(Topic topic) {
+        this.topic = topic;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

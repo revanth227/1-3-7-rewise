@@ -3,9 +3,11 @@ package com.example.rewise.service;
 import com.example.rewise.dto.NotificationResponse;
 import com.example.rewise.entity.Notification;
 import com.example.rewise.entity.Topic;
+import com.example.rewise.entity.User;
 import com.example.rewise.exceptions.NoItems;
 import com.example.rewise.repo.NotificationRepo;
 import com.example.rewise.repo.TopicRepo;
+import com.example.rewise.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,47 +18,60 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class NotificationService {
+
     @Autowired
     private NotificationRepo notificationRepo;
+
     @Autowired
     private TopicRepo topicRepo;
+
+    @Autowired
+    private UserRepo userRepo;
+
     private final Clock clock;
 
     public NotificationService(Clock clock) {
         this.clock = clock;
     }
 
-    public Page<Notification> getTodayNotifications(Pageable pageable) {
-        LocalDate localDate = LocalDate.now(clock);
-        Page<Notification> notificationPage = notificationRepo.findByNotifyDateAndIsSent(localDate, false, pageable);
-        notificationPage.getContent();
+    public Page<Notification> getTodayNotifications(Long userId, Pageable pageable) {
+        LocalDate today = LocalDate.now(clock);
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Page<Notification> notificationPage = notificationRepo
+                .findByUserAndNotifyDateAndIsSent(user, today, false, pageable);
+
         if (notificationPage.isEmpty()) {
             throw new NoItems("No Notifications to display");
         }
+
         return notificationPage;
     }
 
-    public Page<NotificationResponse> history(Pageable pageable) {
-        Page<Notification> notifications = notificationRepo.findByIsSent(true, pageable);
+    public Page<NotificationResponse> history(Long userId, Pageable pageable) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Page<Notification> notifications = notificationRepo
+                .findByUserAndIsSent(user, true, pageable);
+
         List<NotificationResponse> notificationList = new ArrayList<>();
         for (Notification notification : notifications.getContent()) {
-            NotificationResponse notificationResponse = new NotificationResponse();
-            Optional<Topic> topic = topicRepo.findById(notification.getTopicId());
-            if (topic.isEmpty()) {
-                throw new RuntimeException("No topic found");
-            }
-            notificationResponse.setTopicTitle(topic.get().getTitle());
-            notificationResponse.setSubject(topic.get().getSubject());
-            notificationResponse.setSentAt(notification.getSentAt());
-            notificationResponse.setNotifyDate(notification.getNotifyDate());
-            notificationResponse.setMessage(notification.getMessage());
-            notificationList.add(notificationResponse);
+            Topic topic = notification.getTopic();
+            NotificationResponse response = new NotificationResponse();
+            response.setTopicTitle(topic.getTitle());
+            response.setSubject(topic.getSubject());
+            response.setSentAt(notification.getSentAt());
+            response.setNotifyDate(notification.getNotifyDate());
+            response.setMessage(notification.getMessage());
 
+            notificationList.add(response);
         }
-        return new PageImpl<NotificationResponse>(notificationList, pageable, notifications.getTotalElements());
+
+        return new PageImpl<>(notificationList, pageable, notifications.getTotalElements());
     }
 }
