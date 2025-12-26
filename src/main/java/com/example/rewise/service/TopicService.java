@@ -54,7 +54,6 @@ public class TopicService {
 
         User user = userRepo.findById(1L)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         Topic topic = new Topic();
         topic.setUser(user);
         topic.setTitle(requestDto.getTitle());
@@ -65,17 +64,19 @@ public class TopicService {
         topic.setRevised3(false);
         topic.setRevised7(false);
         topic.setCompleted(false);
-
         Topic savedTopic = topicRepo.save(topic);
+        Optional<Notification> notification = notificationRepo.findByTopicAndNotifyDate(savedTopic, today.plusDays(3));
+        Optional<Notification> notification2 = notificationRepo.findByTopicAndNotifyDate(savedTopic, today.plusDays(7));
+        if(notification.isEmpty()) {
+            Notification notification3 = createNotification(savedTopic, today.plusDays(3),
+                    "3 - day revision : " + savedTopic.getTitle(), user);
+            notificationRepo.save(notification3);
+        }
+        if (notification2.isEmpty()) {
+            Notification notification7 = createNotification(savedTopic, today.plusDays(7),
+                    "7 - day revision : " + savedTopic.getTitle(), user);
 
-        Notification notification3 = createNotification(savedTopic, today.plusDays(3),
-                "3 - day revision : " + savedTopic.getTitle(), user);
-        Notification notification7 = createNotification(savedTopic, today.plusDays(7),
-                "7 - day revision : " + savedTopic.getTitle(), user);
-
-        notificationRepo.save(notification3);
-        notificationRepo.save(notification7);
-
+            notificationRepo.save(notification7);}
         return getResponseDto(savedTopic);
     }
 
@@ -127,17 +128,30 @@ public class TopicService {
         }
         Topic topic = updatedDate.get();
         if (day == 3) {
-            topic.setRevised3(true);
-            topicRepo.save(topic);
+            if(!topic.isRevised3()) {
+                topic.setRevised3(true);
+                topicRepo.save(topic);
+            }
         }
         if (day == 7) {
-            topic.setRevised7(true);
+            if (!topic.isRevised7()) {
+                topic.setRevised7(true);
+                topicRepo.save(topic);
+            }
         }
         if (topic.isRevised3() && topic.isRevised7()) {
             topic.setCompleted(true);
+            topicRepo.save(topic);
+        }
+        List<Notification> pendingNotifications =
+                notificationRepo.findByTopicAndIsSent(topic, false);
+
+        for (Notification n : pendingNotifications) {
+            n.setActive(false);
+            n.setSent(true);
         }
 
-
+        notificationRepo.saveAll(pendingNotifications);
         return getResponseDto(updatedDate.get());
 
     }

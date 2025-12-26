@@ -23,8 +23,10 @@ public class NotificationScheduler {
                 .findByNotifyDateAndIsSent(LocalDate.now(), false);
 
         for (Notification n : pending) {
-            n.setActive(true);
-            notificationRepo.save(n);
+            if (!n.getTopic().isCompleted()) {
+                n.setActive(true);
+                notificationRepo.save(n);
+            }
         }
         System.out.println("Today's notifications activated");
     }
@@ -34,10 +36,12 @@ public class NotificationScheduler {
     public void sentNotifications() {
         List<Notification> notifications = notificationRepo.findByActiveAndIsSent(true, false);
         for (Notification notification : notifications) {
-            notification.setSentAt(LocalDate.now());
-            notification.setActive(false);
-            notification.setSent(true);
-            notificationRepo.save(notification);
+            if (!notification.getTopic().isCompleted()) {
+                notification.setSentAt(LocalDate.now());
+                notification.setActive(false);
+                notification.setSent(true);
+                notificationRepo.save(notification);
+            }
         }
         System.out.println("Message Sent to User");
     }

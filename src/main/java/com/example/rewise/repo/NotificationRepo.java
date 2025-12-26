@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NotificationRepo extends JpaRepository<Notification,Long> {
@@ -26,4 +27,11 @@ public interface NotificationRepo extends JpaRepository<Notification,Long> {
     Page<Notification> findByUserAndIsSent(User user, boolean isSent, Pageable pageable);
 
     Topic findByTopicId(Long topicId);
+
+    Notification findByTopicAndDate(Topic savedTopic, LocalDate today);
+
+    Optional<Notification> findByTopicAndNotifyDate(Topic savedTopic, LocalDate today);
+
+    List<Notification> findByTopicAndIsSent(Topic topic, boolean b);
+
 }
