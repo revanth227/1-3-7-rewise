@@ -28,7 +28,7 @@ public interface NotificationRepo extends JpaRepository<Notification,Long> {
 
     Topic findByTopicId(Long topicId);
 
-    Notification findByTopicAndDate(Topic savedTopic, LocalDate today);
+    //Notification findByTopicAndDate(Topic savedTopic, LocalDate today);
 
     Optional<Notification> findByTopicAndNotifyDate(Topic savedTopic, LocalDate today);
 

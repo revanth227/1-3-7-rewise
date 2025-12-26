@@ -67,7 +67,7 @@ public class TopicService {
         Topic savedTopic = topicRepo.save(topic);
         Optional<Notification> notification = notificationRepo.findByTopicAndNotifyDate(savedTopic, today.plusDays(3));
         Optional<Notification> notification2 = notificationRepo.findByTopicAndNotifyDate(savedTopic, today.plusDays(7));
-        if(notification.isEmpty()) {
+        if (notification.isEmpty()) {
             Notification notification3 = createNotification(savedTopic, today.plusDays(3),
                     "3 - day revision : " + savedTopic.getTitle(), user);
             notificationRepo.save(notification3);
@@ -76,7 +76,8 @@ public class TopicService {
             Notification notification7 = createNotification(savedTopic, today.plusDays(7),
                     "7 - day revision : " + savedTopic.getTitle(), user);
 
-            notificationRepo.save(notification7);}
+            notificationRepo.save(notification7);
+        }
         return getResponseDto(savedTopic);
     }
 
@@ -128,7 +129,7 @@ public class TopicService {
         }
         Topic topic = updatedDate.get();
         if (day == 3) {
-            if(!topic.isRevised3()) {
+            if (!topic.isRevised3()) {
                 topic.setRevised3(true);
                 topicRepo.save(topic);
             }
@@ -177,26 +178,55 @@ public class TopicService {
     public List<ResponseDto> allPendingList() {
         User user = userRepo.findById(1L)
                 .orElseThrow(() -> new UserNotFound("User Not Found"));
+
+        LocalDate today = LocalDate.now(clock);
         List<Topic> topics = topicRepo.findByUser(user);
-        LocalDate today = LocalDate.now();
         List<ResponseDto> responseDtos = new ArrayList<>();
+
         for (Topic topic : topics) {
+
             boolean threeDayPending =
-                    (topic.getRevise3Date().isBefore(today) || topic.getRevise3Date().isEqual(today))
+                    (topic.getRevise3Date().isEqual(today) || topic.getRevise3Date().isAfter(today))
                             && !topic.isRevised3();
 
             boolean sevenDayPending =
-                    (topic.getRevise7Date().isBefore(today) || topic.getRevise7Date().isEqual(today))
+                    (topic.getRevise7Date().isEqual(today) || topic.getRevise7Date().isAfter(today))
                             && !topic.isRevised7();
 
             if (threeDayPending || sevenDayPending) {
-                com.example.rewise.dto.ResponseDto responseDto = getResponseDto(topic);
+                responseDtos.add(getResponseDto(topic));
+            }
+        }
+        return responseDtos;
+    }
+
+
+    public List<ResponseDto> missedTopicsService() {
+        List<ResponseDto> responseDtos = new ArrayList<>();
+        User user = userRepo.findById(1L)
+                .orElseThrow(() -> new UserNotFound("User not found"));
+        List<Topic> topics = topicRepo.findByUser(user);
+
+        for (Topic topic : topics) {
+            if (topic.getRevise3Date().isBefore(LocalDate.now(clock)) && !topic.isRevised3() || topic.getRevise7Date().isBefore(LocalDate.now(clock)) && !topic.isRevised7()) {
+                ResponseDto responseDto = getResponseDto(topic);
                 responseDtos.add(responseDto);
             }
         }
         return responseDtos;
     }
 
+    public List<ResponseDto> allCompletedService() {
+        User user = userRepo.findById(1L)
+                .orElseThrow(() -> new UserNotFound("No user Found"));
+        List<ResponseDto> responseDtos = new ArrayList<>();
+        List<Topic> topics = topicRepo.findByUserAndIsCompleted(user, true);
+        for (Topic topic : topics) {
+            ResponseDto responseDto = getResponseDto(topic);
+            responseDtos.add(responseDto);
+        }
+        return responseDtos;
+    }
 }
 
 

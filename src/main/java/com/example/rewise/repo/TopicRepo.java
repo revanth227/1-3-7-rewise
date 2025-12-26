@@ -10,4 +10,6 @@ public interface TopicRepo extends JpaRepository<Topic, Long> {
     List<Topic> findByUserId(Long userId);
 
     List<Topic> findByUser(User user);
+
+    List<Topic> findByUserAndIsCompleted(User user, boolean b);
 }

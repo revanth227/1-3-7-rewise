@@ -4,6 +4,7 @@ import com.example.rewise.dto.RequestDto;
 import com.example.rewise.dto.ResponseDto;
 import com.example.rewise.entity.User;
 import com.example.rewise.service.TopicService;
+import jakarta.validation.groups.Default;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +45,6 @@ public class TopicController {
 
     @GetMapping("/today")
     public List<ResponseDto> findTodayPending() {
-
-
         return topicService.getTodayTasks();
     }
 
@@ -68,5 +67,15 @@ public class TopicController {
     public List<ResponseDto> todayPending() {
         return topicService.allPendingList();
 
+    }
+
+    @GetMapping("/missed")
+    public List<ResponseDto> missedTopics(){
+        return topicService.missedTopicsService();
+    }
+
+    @GetMapping("/completed")
+    public List<ResponseDto> allCompleted(){
+        return topicService.allCompletedService();
     }
 }
