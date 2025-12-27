@@ -13,18 +13,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface NotificationRepo extends JpaRepository<Notification,Long> {
+public interface NotificationRepo extends JpaRepository<Notification, Long> {
     boolean existsByTopicIdAndNotifyDate(Long id, LocalDate revise3Date);
 
     Page<Notification> findByNotifyDateAndIsSent(LocalDate now, boolean b, Pageable pageable);
+
     List<Notification> findByNotifyDateAndIsSent(LocalDate now, boolean b);
 
-    List<Notification> findByActiveAndIsSent(boolean active,boolean isSent);
 
-    Page<Notification> findByIsSent(boolean b,Pageable pageable);
+    Page<Notification> findByIsSent(boolean b, Pageable pageable);
 
     Page<Notification> findByUserAndNotifyDateAndIsSent(User user, LocalDate date, boolean isSent, Pageable pageable);
-    Page<Notification> findByUserAndIsSent(User user, boolean isSent, Pageable pageable);
 
     Topic findByTopicId(Long topicId);
 
@@ -34,4 +33,12 @@ public interface NotificationRepo extends JpaRepository<Notification,Long> {
 
     List<Notification> findByTopicAndIsSent(Topic topic, boolean b);
 
+    Page<Notification> findByUserAndIsSentAndTopic(User user, boolean b, Pageable pageable, Topic topicId);
+
+    Page<Notification> findByUserAndIsSent(User user, boolean isSent, Pageable pageable);
+
+
+    List<Notification> findByNotifyDateAndActiveAndIsSent(LocalDate today, boolean b, boolean b1);
+
+    Page<Notification> findByUserAndIsSenAndSentAt(User user, boolean b, Pageable pageable, LocalDate date);
 }

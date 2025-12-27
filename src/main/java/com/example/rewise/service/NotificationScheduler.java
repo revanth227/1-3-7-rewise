@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -16,11 +17,14 @@ public class NotificationScheduler {
 
     @Autowired
     private NotificationRepo notificationRepo;
+    @Autowired
+    private Clock clock;
 
     @Scheduled(cron = "0 0 6 * * *")
     public void activateTodayNotifications() {
+        LocalDate today = LocalDate.now(clock);
         List<Notification> pending = notificationRepo
-                .findByNotifyDateAndIsSent(LocalDate.now(), false);
+                .findByNotifyDateAndIsSent(today, false);
 
         for (Notification n : pending) {
             if (!n.getTopic().isCompleted()) {
@@ -34,10 +38,12 @@ public class NotificationScheduler {
 
     @Scheduled(cron = "0 */1 * * * * ")
     public void sentNotifications() {
-        List<Notification> notifications = notificationRepo.findByActiveAndIsSent(true, false);
+        LocalDate today = LocalDate.now(clock);
+        List<Notification> notifications =
+                notificationRepo.findByNotifyDateAndActiveAndIsSent(today, true, false);
         for (Notification notification : notifications) {
             if (!notification.getTopic().isCompleted()) {
-                notification.setSentAt(LocalDate.now());
+                notification.setSentAt(today);
                 notification.setActive(false);
                 notification.setSent(true);
                 notificationRepo.save(notification);

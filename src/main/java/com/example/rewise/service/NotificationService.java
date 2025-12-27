@@ -5,6 +5,8 @@ import com.example.rewise.entity.Notification;
 import com.example.rewise.entity.Topic;
 import com.example.rewise.entity.User;
 import com.example.rewise.exceptions.NoItems;
+import com.example.rewise.exceptions.TopicNotFound;
+import com.example.rewise.exceptions.UserNotFound;
 import com.example.rewise.repo.NotificationRepo;
 import com.example.rewise.repo.TopicRepo;
 import com.example.rewise.repo.UserRepo;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -58,6 +61,59 @@ public class NotificationService {
 
         Page<Notification> notifications = notificationRepo
                 .findByUserAndIsSent(user, true, pageable);
+
+        List<NotificationResponse> notificationList = new ArrayList<>();
+        for (Notification notification : notifications.getContent()) {
+            Topic topic = notification.getTopic();
+            NotificationResponse response = new NotificationResponse();
+            response.setTopicTitle(topic.getTitle());
+            response.setSubject(topic.getSubject());
+            response.setSentAt(notification.getSentAt());
+            response.setNotifyDate(notification.getNotifyDate());
+            response.setMessage(notification.getMessage());
+
+            notificationList.add(response);
+        }
+
+        return new PageImpl<>(notificationList, pageable, notifications.getTotalElements());
+    }
+
+    public Page<NotificationResponse> history(Long userId, Pageable pageable, Long topicId) throws AccessDeniedException {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFound("User not found"));
+        Topic findTopic = topicRepo.findById(topicId)
+                .orElseThrow(() -> new TopicNotFound("No Topic Found By The Id " + topicId));
+
+        Page<Notification> notifications = notificationRepo
+                .findByUserAndIsSentAndTopic(user, true, pageable, findTopic);
+
+        List<NotificationResponse> notificationList = new ArrayList<>();
+        for (Notification notification : notifications.getContent()) {
+            if (!findTopic.getUser().getId().equals(userId)) {
+                throw new AccessDeniedException("Topic not owned by user");
+            }
+
+            Topic topic = notification.getTopic();
+            NotificationResponse response = new NotificationResponse();
+            response.setTopicTitle(topic.getTitle());
+            response.setSubject(topic.getSubject());
+            response.setSentAt(notification.getSentAt());
+            response.setNotifyDate(notification.getNotifyDate());
+            response.setMessage(notification.getMessage());
+
+            notificationList.add(response);
+        }
+
+        return new PageImpl<>(notificationList, pageable, notifications.getTotalElements());
+    }
+
+    public Page<NotificationResponse> history(Long userId, Pageable pageable, LocalDate date) {
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Page<Notification> notifications = notificationRepo
+                .findByUserAndIsSenAndSentAt(user, true, pageable, date);
 
         List<NotificationResponse> notificationList = new ArrayList<>();
         for (Notification notification : notifications.getContent()) {

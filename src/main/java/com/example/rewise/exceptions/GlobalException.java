@@ -45,7 +45,7 @@ public class GlobalException {
     }
 
     @ExceptionHandler(NoItems.class)
-    public ResponseEntity<ErrorResponse> handleNoItems(NoItems noItems,HttpServletRequest request){
+    public ResponseEntity<ErrorResponse> handleNoItems(NoItems noItems, HttpServletRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
@@ -53,5 +53,17 @@ public class GlobalException {
                 noItems.getMessage(),
                 request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handlingAccess(AccessDeniedException accessDeniedException, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Access Denied",
+                accessDeniedException.getMessage(),
+                request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+
     }
 }

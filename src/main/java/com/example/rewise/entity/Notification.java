@@ -13,6 +13,7 @@ public class Notification {
     private LocalDate notifyDate;
     private boolean isSent;
     private boolean active;
+    @Column(name = "sent_at")
     private LocalDate sentAt;
     @ManyToOne
     @JoinColumn(name = "topic_id")
