@@ -4,6 +4,10 @@ import com.example.rewise.entity.User;
 import com.example.rewise.repo.UserRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,6 +21,12 @@ public class UserService implements UserDetailsService {
     private UserRepo userRepo;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Lazy
+    @Autowired
+    private AuthenticationManager authManager;
+    @Autowired
+    private JWTService jwtService;
+
 
     @Transactional
     public User savingUser(User user) {
@@ -37,5 +47,14 @@ public class UserService implements UserDetailsService {
                 .password(user.getPassword())
                 .authorities(user.getRole())
                 .build();
+    }
+
+    public String verify(User user) {
+        Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getName(), user.getPassword()));
+        if (authentication.isAuthenticated()) {
+            return jwtService.generateToken(user);
+        }
+        return "Fail";
+
     }
 }

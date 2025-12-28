@@ -1,6 +1,5 @@
 package com.example.rewise.service;
 
-import com.example.rewise.config.UserContext;
 import com.example.rewise.dto.NotificationResponse;
 import com.example.rewise.entity.Notification;
 import com.example.rewise.entity.Topic;
@@ -15,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.AccessDeniedException;
@@ -43,9 +43,15 @@ public class NotificationService {
 
     public Page<Notification> getTodayNotifications(Long userId, Pageable pageable) {
         LocalDate today = LocalDate.now(clock);
-        Long user1 = UserContext.getUserId();
-        User user = userRepo.findById(user1)
-                .orElseThrow(() -> new UserNotFound("User not found"));
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByName(username);
+        if (user == null) {
+            throw new UserNotFound("No User FOund");
+
+        }
 
         Page<Notification> notificationPage = notificationRepo
                 .findByUserAndNotifyDateAndIsSent(user, today, false, pageable);
@@ -57,34 +63,17 @@ public class NotificationService {
         return notificationPage;
     }
 
-    public Page<NotificationResponse> history(Long userId, Pageable pageable) {
-        Long user1 = UserContext.getUserId();
-        User user = userRepo.findById(user1)
-                .orElseThrow(() -> new UserNotFound("User not found"));
 
-        Page<Notification> notifications = notificationRepo
-                .findByUserAndIsSent(user, true, pageable);
+    public Page<NotificationResponse> history(Pageable pageable, Long topicId) throws AccessDeniedException {
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByName(username);
+        if (user == null) {
+            throw new UserNotFound("No User Found");
 
-        List<NotificationResponse> notificationList = new ArrayList<>();
-        for (Notification notification : notifications.getContent()) {
-            Topic topic = notification.getTopic();
-            NotificationResponse response = new NotificationResponse();
-            response.setTopicTitle(topic.getTitle());
-            response.setSubject(topic.getSubject());
-            response.setSentAt(notification.getSentAt());
-            response.setNotifyDate(notification.getNotifyDate());
-            response.setMessage(notification.getMessage());
-
-            notificationList.add(response);
         }
-
-        return new PageImpl<>(notificationList, pageable, notifications.getTotalElements());
-    }
-
-    public Page<NotificationResponse> history(Long userId, Pageable pageable, Long topicId) throws AccessDeniedException {
-        Long user1 = UserContext.getUserId();
-        User user = userRepo.findById(user1)
-                .orElseThrow(() -> new UserNotFound("User not found"));
         Topic findTopic = topicRepo.findById(topicId)
                 .orElseThrow(() -> new TopicNotFound("No Topic Found By The Id " + topicId));
 
@@ -93,7 +82,7 @@ public class NotificationService {
 
         List<NotificationResponse> notificationList = new ArrayList<>();
         for (Notification notification : notifications.getContent()) {
-            if (!findTopic.getUser().getId().equals(userId)) {
+            if (!findTopic.getUser().getName().equals(username)) {
                 throw new AccessDeniedException("Topic not owned by user");
             }
 
@@ -111,11 +100,17 @@ public class NotificationService {
         return new PageImpl<>(notificationList, pageable, notifications.getTotalElements());
     }
 
-    public Page<NotificationResponse> history(Long userId, Pageable pageable, LocalDate date) {
+    public Page<NotificationResponse> history(Pageable pageable, LocalDate date) {
 
-        Long user1 = UserContext.getUserId();
-        User user = userRepo.findById(user1)
-                .orElseThrow(() -> new UserNotFound("User not found"));
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByName(username);
+        if (user == null) {
+            throw new UserNotFound("No User FOund");
+
+        }
 
         Page<Notification> notifications = notificationRepo
                 .findByUserAndIsSentAndSentAt(user, true, pageable, date);
@@ -133,6 +128,32 @@ public class NotificationService {
             notificationList.add(response);
         }
 
+        return new PageImpl<>(notificationList, pageable, notifications.getTotalElements());
+    }
+
+    public Page<NotificationResponse> history(Pageable pageable) {
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByName(username);
+        if (user == null) {
+            throw new UserNotFound("No User FOund");
+
+        }
+        Page<Notification> notifications = notificationRepo
+                .findByUserAndIsSent(user, true, pageable);
+        List<NotificationResponse> notificationList = new ArrayList<>();
+        for (Notification notification : notifications.getContent()) {
+            Topic topic = notification.getTopic();
+            NotificationResponse response = new NotificationResponse();
+            response.setTopicTitle(topic.getTitle());
+            response.setSubject(topic.getSubject());
+            response.setSentAt(notification.getSentAt());
+            response.setNotifyDate(notification.getNotifyDate());
+            response.setMessage(notification.getMessage());
+            notificationList.add(response);
+        }
         return new PageImpl<>(notificationList, pageable, notifications.getTotalElements());
     }
 }

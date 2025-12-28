@@ -12,8 +12,15 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+
     @PostMapping("/login")
     public User addUser(@RequestBody User user) {
         return userService.savingUser(user);
+    }
+
+    @PostMapping("/signup")
+    public String signUp(@RequestBody User user){
+        return userService.verify(user);
+
     }
 }

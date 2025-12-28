@@ -20,7 +20,7 @@ public class NotificationScheduler {
     @Autowired
     private Clock clock;
 
-    @Scheduled(cron = "0 0 6 * * *")
+    @Scheduled(cron = "0 */1 * * * *")
     public void activateTodayNotifications() {
         LocalDate today = LocalDate.now(clock);
         List<Notification> pending = notificationRepo

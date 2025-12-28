@@ -5,6 +5,7 @@ import com.example.rewise.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TopicRepo extends JpaRepository<Topic, Long> {
     List<Topic> findByUserId(Long userId);
@@ -12,4 +13,6 @@ public interface TopicRepo extends JpaRepository<Topic, Long> {
     List<Topic> findByUser(User user);
 
     List<Topic> findByUserAndIsCompleted(User user, boolean b);
+
+    Optional<Topic> findByIdAndUser(long id, User user);
 }

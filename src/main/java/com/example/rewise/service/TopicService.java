@@ -1,6 +1,5 @@
 package com.example.rewise.service;
 
-import com.example.rewise.config.UserContext;
 import com.example.rewise.dto.RequestDto;
 import com.example.rewise.dto.ResponseDto;
 import com.example.rewise.entity.Notification;
@@ -13,6 +12,7 @@ import com.example.rewise.repo.TopicRepo;
 import com.example.rewise.repo.UserRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -40,9 +40,15 @@ public class TopicService {
     }
 
     public List<ResponseDto> getAllByUserId() {
-        Long user1 = UserContext.getUserId();
-        User user = userRepo.findById(user1)
-                .orElseThrow(() -> new UserNotFound("User Not Found"));
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByName(username);
+        if (user == null) {
+            throw new UserNotFound("No User FOund");
+
+        }
 
         return topicRepo.findByUser(user)
                 .stream()
@@ -53,8 +59,15 @@ public class TopicService {
     @Transactional
     public ResponseDto create(RequestDto requestDto) {
         LocalDate today = LocalDate.now(clock);
-        User user = userRepo.findById(UserContext.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByName(username);
+        if (user == null) {
+            throw new UserNotFound("No user Found  " + username);
+        }
+
         Topic topic = new Topic();
         topic.setUser(user);
         topic.setTitle(requestDto.getTitle());
@@ -82,21 +95,19 @@ public class TopicService {
         return getResponseDto(savedTopic);
     }
 
-    private Notification createNotification(Topic topic, LocalDate date, String message, User user) {
-        Notification n = new Notification();
-        n.setTopic(topic);
-        n.setUser(user);
-        n.setNotifyDate(date);
-        n.setMessage(message);
-        n.setSent(false);
-        n.setActive(false);
-        return n;
-    }
+
 
     public List<ResponseDto> getTodayTasks() {
         LocalDate today = LocalDate.now();
-        User user = userRepo.findById(UserContext.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByName(username);
+        if (user == null) {
+            throw new UserNotFound("No User Found");
+
+        }
         List<Topic> topics = topicRepo.findByUser(user);
         List<ResponseDto> responseDtos = new ArrayList<>();
         for (Topic topic : topics) {
@@ -168,7 +179,16 @@ public class TopicService {
     }
 
     public String removeById(long id) {
-        Optional<Topic> topic = topicRepo.findById(id);
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByName(username);
+        if (user == null) {
+            throw new UserNotFound("No User Found");
+
+        }
+        Optional<Topic> topic = topicRepo.findByIdAndUser(id, user);
         if (topic.isEmpty()) {
             throw new TopicNotFound("No Topic Found To Delete");
         }
@@ -176,9 +196,15 @@ public class TopicService {
     }
 
     public List<ResponseDto> allPendingList() {
-        User user = userRepo.findById(UserContext.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByName(username);
+        if (user == null) {
+            throw new UserNotFound("No User Found");
 
+        }
         LocalDate today = LocalDate.now(clock);
         List<Topic> topics = topicRepo.findByUser(user);
         List<ResponseDto> responseDtos = new ArrayList<>();
@@ -202,10 +228,18 @@ public class TopicService {
 
 
     public List<ResponseDto> missedTopicsService() {
-        List<ResponseDto> responseDtos = new ArrayList<>();
-        User user = userRepo.findById(UserContext.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByName(username);
+        if (user == null) {
+            throw new UserNotFound("No User Found");
+
+        }
         List<Topic> topics = topicRepo.findByUser(user);
+        List<ResponseDto> responseDtos = new ArrayList<>();
+
 
         for (Topic topic : topics) {
             if (topic.getRevise3Date().isBefore(LocalDate.now(clock)) && !topic.isRevised3() || topic.getRevise7Date().isBefore(LocalDate.now(clock)) && !topic.isRevised7()) {
@@ -217,8 +251,16 @@ public class TopicService {
     }
 
     public List<ResponseDto> allCompletedService() {
-        User user = userRepo.findById(UserContext.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByName(username);
+        if (user == null) {
+            throw new UserNotFound("No User FOund");
+
+        }
+
         List<ResponseDto> responseDtos = new ArrayList<>();
         List<Topic> topics = topicRepo.findByUserAndIsCompleted(user, true);
         for (Topic topic : topics) {
@@ -226,6 +268,17 @@ public class TopicService {
             responseDtos.add(responseDto);
         }
         return responseDtos;
+    }
+
+    private Notification createNotification(Topic topic, LocalDate date, String message, User user) {
+        Notification n = new Notification();
+        n.setTopic(topic);
+        n.setUser(user);
+        n.setNotifyDate(date);
+        n.setMessage(message);
+        n.setSent(false);
+        n.setActive(false);
+        return n;
     }
 }
 

@@ -24,19 +24,19 @@ public class NotificationController {
         return notificationService.getTodayNotifications(id, pageable);
     }
 
-    @GetMapping("/notifications/history/{id}")
-    public Page<NotificationResponse> notificationList(@PathVariable Long id,
+    @GetMapping("/notifications/history")
+    public Page<NotificationResponse> notificationList(
                                                        Pageable pageable,
                                                        @RequestParam(required = false) Long topicId,
                                                        @RequestParam(required = false) LocalDate date
 
     ) throws AccessDeniedException {
         if (topicId != null) {
-            return notificationService.history(id, pageable, topicId);
+            return notificationService.history( pageable, topicId);
         }
         if (date != null) {
-            return notificationService.history(id, pageable, date);
+            return notificationService.history( pageable, date);
         }
-        return notificationService.history(id, pageable);
+        return notificationService.history( pageable);
     }
 }
