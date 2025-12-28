@@ -1,5 +1,6 @@
 package com.example.rewise.service;
 
+import com.example.rewise.config.UserContext;
 import com.example.rewise.dto.NotificationResponse;
 import com.example.rewise.entity.Notification;
 import com.example.rewise.entity.Topic;
@@ -42,8 +43,9 @@ public class NotificationService {
 
     public Page<Notification> getTodayNotifications(Long userId, Pageable pageable) {
         LocalDate today = LocalDate.now(clock);
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long user1 = UserContext.getUserId();
+        User user = userRepo.findById(user1)
+                .orElseThrow(() -> new UserNotFound("User not found"));
 
         Page<Notification> notificationPage = notificationRepo
                 .findByUserAndNotifyDateAndIsSent(user, today, false, pageable);
@@ -56,8 +58,9 @@ public class NotificationService {
     }
 
     public Page<NotificationResponse> history(Long userId, Pageable pageable) {
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long user1 = UserContext.getUserId();
+        User user = userRepo.findById(user1)
+                .orElseThrow(() -> new UserNotFound("User not found"));
 
         Page<Notification> notifications = notificationRepo
                 .findByUserAndIsSent(user, true, pageable);
@@ -79,7 +82,8 @@ public class NotificationService {
     }
 
     public Page<NotificationResponse> history(Long userId, Pageable pageable, Long topicId) throws AccessDeniedException {
-        User user = userRepo.findById(userId)
+        Long user1 = UserContext.getUserId();
+        User user = userRepo.findById(user1)
                 .orElseThrow(() -> new UserNotFound("User not found"));
         Topic findTopic = topicRepo.findById(topicId)
                 .orElseThrow(() -> new TopicNotFound("No Topic Found By The Id " + topicId));
@@ -109,11 +113,12 @@ public class NotificationService {
 
     public Page<NotificationResponse> history(Long userId, Pageable pageable, LocalDate date) {
 
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long user1 = UserContext.getUserId();
+        User user = userRepo.findById(user1)
+                .orElseThrow(() -> new UserNotFound("User not found"));
 
         Page<Notification> notifications = notificationRepo
-                .findByUserAndIsSenAndSentAt(user, true, pageable, date);
+                .findByUserAndIsSentAndSentAt(user, true, pageable, date);
 
         List<NotificationResponse> notificationList = new ArrayList<>();
         for (Notification notification : notifications.getContent()) {

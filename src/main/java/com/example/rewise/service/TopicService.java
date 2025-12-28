@@ -1,5 +1,6 @@
 package com.example.rewise.service;
 
+import com.example.rewise.config.UserContext;
 import com.example.rewise.dto.RequestDto;
 import com.example.rewise.dto.ResponseDto;
 import com.example.rewise.entity.Notification;
@@ -39,7 +40,8 @@ public class TopicService {
     }
 
     public List<ResponseDto> getAllByUserId() {
-        User user = userRepo.findById(1L)
+        Long user1 = UserContext.getUserId();
+        User user = userRepo.findById(user1)
                 .orElseThrow(() -> new UserNotFound("User Not Found"));
 
         return topicRepo.findByUser(user)
@@ -51,8 +53,7 @@ public class TopicService {
     @Transactional
     public ResponseDto create(RequestDto requestDto) {
         LocalDate today = LocalDate.now(clock);
-
-        User user = userRepo.findById(1L)
+        User user = userRepo.findById(UserContext.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Topic topic = new Topic();
         topic.setUser(user);
@@ -94,10 +95,9 @@ public class TopicService {
 
     public List<ResponseDto> getTodayTasks() {
         LocalDate today = LocalDate.now();
-
-        User users = userRepo.findById(1L)
-                .orElseThrow(() -> new UserNotFound("User Not Found"));
-        List<Topic> topics = topicRepo.findByUser(users);
+        User user = userRepo.findById(UserContext.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        List<Topic> topics = topicRepo.findByUser(user);
         List<ResponseDto> responseDtos = new ArrayList<>();
         for (Topic topic : topics) {
             if ((topic.getRevise3Date().equals(today) && !topic.isRevised3()) ||
@@ -176,8 +176,8 @@ public class TopicService {
     }
 
     public List<ResponseDto> allPendingList() {
-        User user = userRepo.findById(1L)
-                .orElseThrow(() -> new UserNotFound("User Not Found"));
+        User user = userRepo.findById(UserContext.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         LocalDate today = LocalDate.now(clock);
         List<Topic> topics = topicRepo.findByUser(user);
@@ -203,8 +203,8 @@ public class TopicService {
 
     public List<ResponseDto> missedTopicsService() {
         List<ResponseDto> responseDtos = new ArrayList<>();
-        User user = userRepo.findById(1L)
-                .orElseThrow(() -> new UserNotFound("User not found"));
+        User user = userRepo.findById(UserContext.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
         List<Topic> topics = topicRepo.findByUser(user);
 
         for (Topic topic : topics) {
@@ -217,8 +217,8 @@ public class TopicService {
     }
 
     public List<ResponseDto> allCompletedService() {
-        User user = userRepo.findById(1L)
-                .orElseThrow(() -> new UserNotFound("No user Found"));
+        User user = userRepo.findById(UserContext.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
         List<ResponseDto> responseDtos = new ArrayList<>();
         List<Topic> topics = topicRepo.findByUserAndIsCompleted(user, true);
         for (Topic topic : topics) {

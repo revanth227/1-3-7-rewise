@@ -27,7 +27,6 @@ public interface NotificationRepo extends JpaRepository<Notification, Long> {
 
     Topic findByTopicId(Long topicId);
 
-    //Notification findByTopicAndDate(Topic savedTopic, LocalDate today);
 
     Optional<Notification> findByTopicAndNotifyDate(Topic savedTopic, LocalDate today);
 
@@ -40,5 +39,5 @@ public interface NotificationRepo extends JpaRepository<Notification, Long> {
 
     List<Notification> findByNotifyDateAndActiveAndIsSent(LocalDate today, boolean b, boolean b1);
 
-    Page<Notification> findByUserAndIsSenAndSentAt(User user, boolean b, Pageable pageable, LocalDate date);
+    Page<Notification> findByUserAndIsSentAndSentAt(User user, boolean b, Pageable pageable, LocalDate date);
 }
