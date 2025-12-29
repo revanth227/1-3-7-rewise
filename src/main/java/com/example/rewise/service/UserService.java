@@ -1,5 +1,6 @@
 package com.example.rewise.service;
 
+import com.example.rewise.config.JWTService;
 import com.example.rewise.entity.User;
 import com.example.rewise.repo.UserRepo;
 import jakarta.transaction.Transactional;

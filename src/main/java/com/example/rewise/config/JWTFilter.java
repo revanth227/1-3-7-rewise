@@ -1,6 +1,5 @@
 package com.example.rewise.config;
 
-import com.example.rewise.service.JWTService;
 import com.example.rewise.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

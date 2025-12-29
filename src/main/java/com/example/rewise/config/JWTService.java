@@ -1,4 +1,4 @@
-package com.example.rewise.service;
+package com.example.rewise.config;
 
 import com.example.rewise.entity.User;
 import io.jsonwebtoken.Claims;
@@ -27,7 +27,7 @@ public class JWTService {
                 .claims().add(claims)
                 .subject(userName)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 60 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + 60 * 60 * 60))
                 .and()
                 .signWith(getTheKey())
                 .compact();

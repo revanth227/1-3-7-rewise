@@ -46,7 +46,7 @@ public class TopicService {
                 .getName();
         User user = userRepo.findByName(username);
         if (user == null) {
-            throw new UserNotFound("No User FOund");
+            throw new UserNotFound("No User Found");
 
         }
 
@@ -134,7 +134,9 @@ public class TopicService {
     }
 
     public ResponseDto updateIsRevised(Long id, int day) {
-        Optional<Topic> updatedDate = topicRepo.findById(id);
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepo.findByName(username);
+        Optional<Topic> updatedDate = topicRepo.findByIdAndUser(id,user);
         if (updatedDate.isEmpty()) {
             throw new TopicNotFound("No topic Found " + id);
         }
