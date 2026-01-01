@@ -19,9 +19,9 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    @GetMapping("/today/notifications{id}")
-    public Page<Notification> getAll(@PathVariable Long id, Pageable pageable) {
-        return notificationService.getTodayNotifications(id, pageable);
+    @GetMapping("/today/notifications")
+    public Page<Notification> getAll( Pageable pageable) {
+        return notificationService.getTodayNotifications( pageable);
     }
 
     @GetMapping("/notifications/history")

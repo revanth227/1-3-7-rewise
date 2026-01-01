@@ -41,7 +41,8 @@ public class NotificationService {
         this.clock = clock;
     }
 
-    public Page<Notification> getTodayNotifications(Long userId, Pageable pageable) {
+    public Page<Notification> getTodayNotifications(Pageable pageable) {
+
         LocalDate today = LocalDate.now(clock);
         String username = SecurityContextHolder
                 .getContext()
