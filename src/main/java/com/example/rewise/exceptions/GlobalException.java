@@ -70,12 +70,12 @@ public class GlobalException {
 
     public ResponseEntity<ErrorResponse> handleDuplication(NoDuplicateException exception,HttpServletRequest request){
         ErrorResponse response = new ErrorResponse(
-                LocalDateTime.now()
+                LocalDateTime.now(),
                 HttpStatus.FORBIDDEN.value(),
                 "Duplicate Found",
                 exception.getMessage(),
                 request.getRequestURI()
         );
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response)
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 }
