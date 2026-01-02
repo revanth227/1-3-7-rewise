@@ -1,6 +1,8 @@
 package com.example.rewise.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -13,6 +15,9 @@ public class User {
     private String name;
     private String password;
     private String role;
+    @Email(message = "Email should be valid")
+    @NotNull(message = "Email can't be Null")
+    private String email;
     @OneToMany(mappedBy = "user")
     private List<Topic> topicList;
 
@@ -63,5 +68,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

@@ -2,6 +2,7 @@ package com.example.rewise.service;
 
 import com.example.rewise.config.JWTService;
 import com.example.rewise.entity.User;
+import com.example.rewise.exceptions.NoDuplicateException;
 import com.example.rewise.repo.UserRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +32,13 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public User savingUser(User user) {
+        User user1 = userRepo.findByName(user.getName());
+        if (user1 != null) {
+            throw new NoDuplicateException("Duplicate Users Not Allowed");
+        }
         String newPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(newPassword);
+        user.setRole("USER");
         return userRepo.save(user);
     }
 
