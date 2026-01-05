@@ -1,11 +1,14 @@
 package com.example.rewise.service;
 
 import com.example.rewise.dto.MailDto;
-import com.example.rewise.dto.ResponseDto;
+import com.example.rewise.dto.MailResponseDto;
 import com.example.rewise.entity.Notification;
 import com.example.rewise.repo.NotificationRepo;
 import com.example.rewise.repo.UserRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+
 
 @Service
 @Configuration
@@ -28,6 +32,10 @@ public class NotificationScheduler {
     private RestTemplate restTemplate;
     @Autowired
     private UserRepo userRepo;
+    private static final Logger logger =
+            LoggerFactory.getLogger(NotificationScheduler.class);
+    @Value("${email.service.url}")
+    private String emailServiceUrl;
 
 
     @Scheduled(cron = "0 */1 * * * *")
@@ -54,34 +62,34 @@ public class NotificationScheduler {
                 notificationRepo.findByNotifyDateAndActiveAndIsSent(today, true, false);
         for (Notification notification : notifications) {
             if (notification.getTopic().isCompleted()) {
-                continue;
-            }
+                continue;}
             if (notification.getUser() != null && notification.getUser().getEmail() != null) {
-                MailDto mailDto = new MailDto(notification.getUser().getEmail(), "Remainder", notification.getMessage());
-                String url = "http://localhost:8081/email/send";
-                ResponseEntity<ResponseDto> response =
-                        restTemplate.postForEntity(
-                                url,
-                                mailDto,
-                                ResponseDto.class
-                        );
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    notification.setSentAt(today);
-                    notification.setActive(false);
-                    notification.setSent(true);
+                MailDto mailDto = new MailDto(notification.getUser().getEmail(), "Reminder", notification.getMessage());
+                String url = emailServiceUrl;
+                try {ResponseEntity<MailResponseDto> response = restTemplate.postForEntity(url,mailDto, MailResponseDto.class);
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        notification.setSentAt(today);
+                        notification.setActive(false);
+                        notification.setSent(true);
+                        notificationRepo.save(notification);
+                        logger.info("Mail sent successfully to {} for notification {}",
+                                notification.getUser().getEmail(),
+                                notification.getId());
+                    } else {
+                        notification.setActive(true);
+                        notification.setSent(false);
+                        notificationRepo.save(notification);
+                    }
+                } catch (Exception ex) {
+                    logger.error("Failed to send mail to {} for notification {}",
+                            notification.getUser().getEmail(), notification.getId(), ex);
+                    notification.setActive(true);
+                    notification.setSent(false);
                     notificationRepo.save(notification);
                 }
             }
-
-            System.out.println(
-                    "Mail sent to " + notification.getUser().getEmail()
-            );
-
-
-            System.out.println("Message Sent to User " + notification.getUser().getName());
         }
-
-
+        logger.info("Notification scheduler finished");
     }
 
 

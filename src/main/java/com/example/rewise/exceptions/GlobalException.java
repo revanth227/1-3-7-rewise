@@ -68,6 +68,7 @@ public class GlobalException {
 
     }
 
+    @ExceptionHandler(NoDuplicateException.class)
     public ResponseEntity<ErrorResponse> handleDuplication(NoDuplicateException exception,HttpServletRequest request){
         ErrorResponse response = new ErrorResponse(
                 LocalDateTime.now(),

@@ -15,9 +15,5 @@ public class RewiseApplication {
 		SpringApplication.run(RewiseApplication.class, args);
 	}
 
-	@Bean
-	public RestTemplate createRestTemplate(){
-		return new RestTemplate();
-	}
 
 }
