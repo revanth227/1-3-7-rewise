@@ -3,6 +3,7 @@ package com.example.rewise.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class Notification {
@@ -13,6 +14,8 @@ public class Notification {
     private LocalDate notifyDate;
     private boolean isSent;
     private boolean active;
+    private int retryCount;
+    private LocalDateTime lastAttempt;
     @Column(name = "sent_at")
     private LocalDate sentAt;
     @ManyToOne
@@ -88,5 +91,21 @@ public class Notification {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
+    }
+
+    public LocalDateTime getLastAttempt() {
+        return lastAttempt;
+    }
+
+    public void setLastAttempt(LocalDateTime lastAttempt) {
+        this.lastAttempt = lastAttempt;
     }
 }
