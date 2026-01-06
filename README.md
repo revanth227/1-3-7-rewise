@@ -1,124 +1,95 @@
-# reWise - Spring Boot Application
+# 🚀 reWise - Spaced Repetition Learning Platform
 
-## 📋 Project Overview
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.java.net/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.7-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0+-blue.svg)](https://www.mysql.com/)
+[![Maven](https://img.shields.io/badge/Maven-3.6+-red.svg)](https://maven.apache.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-reWise is a modern Spring Boot application built with Java 17 and Spring Boot 3.5.7. This project serves as a robust foundation for web applications with comprehensive security, data persistence, and validation features.
+> A powerful Spring Boot application for implementing spaced repetition learning techniques, helping users optimize their study habits through intelligent topic scheduling and automated notifications.
 
-## 🚀 Version Information
+## ✨ Features
 
-- **Current Version:** 1.3.7
-- **Spring Boot Version:** 3.5.7
-- **Java Version:** 17
-- **Build Tool:** Maven
-- **Last Updated:** 2025-12-16
+### 🎯 Core Learning Features
+- **Spaced Repetition Algorithm**: Automatic scheduling of 3-day and 7-day revision cycles
+- **Topic Management**: Create, track, and manage study topics with subjects
+- **Progress Tracking**: Monitor revision status and completion rates
+- **Smart Notifications**: Automated reminders for upcoming revisions
 
-### Version History
-| Version | Date | Changes |
-|---------|------|---------|
-| **v1.3.7** | 2025-12-16 | Enhanced database configuration with HikariCP pooling, improved logging, and DevTools integration |
-| **v1.3.4** | TBD | Enhanced security and database optimization |
-| **v1.3.x** | TBD | Security enhancements and performance improvements |
-| **v1.x.x** | TBD | Initial release with core functionality |
+### 🔐 Security & Authentication
+- **JWT Authentication**: Secure token-based authentication system
+- **Role-Based Access**: User-specific data isolation
+- **Password Encryption**: BCrypt hashing for secure password storage
+- **Email Integration**: Welcome emails and notifications
+
+### 📊 Data Management
+- **MySQL Database**: Robust relational data storage
+- **HikariCP Connection Pooling**: Optimized database connections
+- **JPA/Hibernate ORM**: Efficient object-relational mapping
+- **Transaction Management**: ACID-compliant operations
+
+### 🛠️ Developer Experience
+- **Spring DevTools**: Hot reload for rapid development
+- **Comprehensive Logging**: Detailed application and SQL logging
+- **Profile-Based Configuration**: Environment-specific settings
+- **RESTful API**: Clean, documented endpoints
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Controllers   │    │    Services     │    │   Repositories  │
+│                 │    │                 │    │                 │
+│ • UserController│◄──►│ • UserService   │◄──►│ • UserRepo      │
+│ • TopicController│    │ • TopicService │    │ • TopicRepo     │
+│ • NotificationCtrl│   │ • Notification │    │ • NotificationRepo│
+└─────────────────┘    │   Scheduler     │    └─────────────────┘
+                       └─────────────────┘           │
+                                                    ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│     Entities    │    │     DTOs        │    │   Config       │
+│                 │    │                 │    │                │
+│ • User          │    │ • RequestDto    │    │ • SecurityConfig│
+│ • Topic         │    │ • ResponseDto   │    │ • JWTService    │
+│ • Notification  │    │ • MailDto       │    │ • RestClientCfg │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
 
 ## 🛠️ Technology Stack
 
-- **Framework:** Spring Boot 3.5.7
-- **Language:** Java 17
-- **Database:** MySQL 8.0+
-- **Security:** Spring Security with BCrypt
-- **ORM:** Hibernate/JPA
-- **Validation:** Bean Validation (JSR-303)
-- **Build Tool:** Maven
-- **Development:** Spring DevTools with hot reload
+### Backend Framework
+- **Java 17** - Modern Java with latest language features
+- **Spring Boot 3.5.7** - Production-ready framework
+- **Spring Security** - Authentication and authorization
+- **Spring Data JPA** - Data access layer
+- **Spring Validation** - Bean validation
 
-## 📦 Dependencies
+### Database & Persistence
+- **MySQL 8.0+** - Relational database
+- **Hibernate/JPA** - ORM framework
+- **HikariCP** - Connection pooling
+- **Flyway** - Database migrations (planned)
 
-### Core Dependencies
-- `spring-boot-starter-web` - Web MVC framework
-- `spring-boot-starter-data-jpa` - Data persistence with JPA
-- `spring-boot-starter-security` - Security framework
-- `spring-boot-starter-validation` - Bean validation
-- `mysql-connector-j` - MySQL database driver
-- `spring-boot-devtools` - Development tools
+### Development Tools
+- **Maven** - Dependency management and build
+- **Spring DevTools** - Development utilities
+- **Lombok** - Code generation (if configured)
 
-### Testing Dependencies
-- `spring-boot-starter-test` - Testing framework
-- `spring-security-test` - Security testing utilities
+### External Integrations
+- **JWT (JJWT)** - JSON Web Tokens
+- **RestTemplate** - HTTP client for email service
+- **Jakarta Mail** - Email functionality
 
-## 🔧 Prerequisites
+## 📋 Prerequisites
 
-Before running this application, ensure you have:
+Before running this application, ensure you have the following installed:
 
-1. **Java 17** or higher installed
-2. **Maven 3.6+** installed
-3. **MySQL 8.0+** server running
-4. **Git** for version control
+- **Java 17** or higher
+- **Maven 3.6+**
+- **MySQL 8.0+** server
+- **Git** (for cloning the repository)
 
-## 🗄️ Database Setup
-
-### Development Environment
-
-1. **Create MySQL Database:**
-   ```sql
-   CREATE DATABASE rewise;
-   CREATE USER 'root'@'localhost' IDENTIFIED BY 'Revanth@0883';
-   GRANT ALL PRIVILEGES ON rewise.* TO 'root'@'localhost';
-   FLUSH PRIVILEGES;
-   ```
-
-2. **Database Configuration:**
-   - Host: `localhost:3306`
-   - Database: `rewise`
-   - Username: `root`
-   - Password: `Revanth@0883`
-   - Driver: `com.mysql.cj.jdbc.Driver`
-
-### Database Properties Configuration
-
-The application uses the following database properties (from `application.properties`):
-
-```properties
-# Database Connection
-spring.datasource.url=jdbc:mysql://localhost:3306/rewise?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-spring.datasource.username=root
-spring.datasource.password=Revanth@0883
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-
-# HikariCP Connection Pool Configuration
-spring.datasource.hikari.maximum-pool-size=20        # Maximum connections in pool
-spring.datasource.hikari.minimum-idle=5              # Minimum idle connections
-spring.datasource.hikari.idle-timeout=300000         # 5 minutes idle timeout
-spring.datasource.hikari.connection-timeout=20000    # 20 seconds connection timeout
-
-# JPA/Hibernate Configuration
-spring.jpa.hibernate.ddl-auto=update                 # Auto-update schema
-spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
-spring.jpa.show-sql=true                             # Log SQL queries
-spring.jpa.properties.hibernate.format_sql=true      # Format SQL output
-spring.jpa.properties.hibernate.use_sql_comments=true
-spring.jpa.properties.hibernate.jdbc.batch_size=20   # Batch insert/update size
-spring.jpa.properties.hibernate.order_inserts=true   # Order INSERT statements
-spring.jpa.properties.hibernate.order_updates=true   # Order UPDATE statements
-```
-
-### Connection Pool Details
-
-| Property | Value | Description |
-|----------|-------|-------------|
-| **Maximum Pool Size** | 20 | Max concurrent database connections |
-| **Minimum Idle** | 5 | Min idle connections maintained |
-| **Idle Timeout** | 300,000 ms (5 min) | Time before idle connection is closed |
-| **Connection Timeout** | 20,000 ms (20 sec) | Max wait time for connection |
-
-### Production Environment
-For production deployment:
-1. Create a separate database instance
-2. Update `application-prod.properties` with production credentials
-3. Increase connection pool size based on expected load
-4. Set `spring.jpa.hibernate.ddl-auto=validate` (do not auto-update schema)
-5. Disable SQL logging for performance
-
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### 1. Clone the Repository
 ```bash
@@ -126,209 +97,386 @@ git clone <repository-url>
 cd rewise
 ```
 
-### 2. Configure Database
-Ensure MySQL is running and the database `rewise_dev_db` exists (see Database Setup section).
+### 2. Database Setup
+```sql
+-- Create database
+CREATE DATABASE rewise;
 
-### 3. Build the Project
-```bash
-mvn clean install
+-- Create user (adjust password as needed)
+CREATE USER 'root'@'localhost' IDENTIFIED BY 'Revanth@0883';
+GRANT ALL PRIVILEGES ON rewise.* TO 'root'@'localhost';
+FLUSH PRIVILEGES;
 ```
 
-### 4. Run the Application
+### 3. Configure Application
+The application uses `src/main/resources/application.properties`. Key settings:
+
+```properties
+# Database Configuration
+spring.datasource.url=jdbc:mysql://localhost:3306/rewise?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.username=root
+spring.datasource.password=Revanth@0883
+
+# Email Service (external)
+email.service.url=http://localhost:8081/email/send
+
+# Application Settings
+server.port=8080
+spring.profiles.active=dev
+```
+
+### 4. Build and Run
 ```bash
+# Build the project
+mvn clean install
+
+# Run the application
 mvn spring-boot:run
 ```
 
-The application will start on `http://localhost:8080/api`
+The application will be available at `http://localhost:8080`
 
 ### 5. Default Credentials
 - **Username:** admin
 - **Password:** admin123
 - **Role:** ADMIN
 
-## 📁 Project Structure
+## 📚 API Documentation
 
-```
-rewise/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/example/rewise/
-│   │   │       ├── RewiseApplication.java
-│   │   │       ├── entity/          # JPA entities
-│   │   │       ├── repository/      # Data repositories
-│   │   │       ├── service/         # Business logic
-│   │   │       ├── controller/      # REST controllers
-│   │   │       └── config/          # Configuration classes
-│   │   └── resources/
-│   │       ├── application.properties
-│   │       ├── static/              # Static web assets
-│   │       └── templates/           # View templates
-│   └── test/                        # Test classes
-├── pom.xml                          # Maven configuration
-└── README.md                        # This file
+### Authentication Endpoints
+
+#### User Registration
+```http
+POST /signup
+Content-Type: application/json
+
+{
+  "name": "john_doe",
+  "password": "secure_password",
+  "email": "john@example.com"
+}
 ```
 
-## ⚙️ Configuration
+#### User Login
+```http
+POST /login
+Content-Type: application/json
 
-### Application Properties
-The application uses profile-based configuration:
+{
+  "name": "john_doe",
+  "password": "secure_password"
+}
+```
 
-- **Development Profile:** `dev` (default)
-- **Production Profile:** `prod`
+**Response:** JWT token for authenticated requests
 
-Key configuration areas:
-- Database connection settings
-- JPA/Hibernate configuration
-- Security settings
-- Logging configuration
-- Development tools
+### Topic Management Endpoints
+
+#### Create Topic
+```http
+POST /add
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "title": "Java Collections Framework",
+  "subject": "Computer Science"
+}
+```
+
+#### Get All Topics
+```http
+GET /topics?page=0&size=10&sort=createdDate&direction=desc
+Authorization: Bearer <jwt_token>
+```
+
+#### Get Today's Tasks
+```http
+GET /today
+Authorization: Bearer <jwt_token>
+```
+
+#### Mark Revision Complete
+```http
+PUT /topics/{topicId}/revision/{day}
+Authorization: Bearer <jwt_token>
+```
+- `day`: 3 or 7 (for 3-day or 7-day revision)
+
+#### Delete Topic
+```http
+DELETE /delete/{topicId}
+Authorization: Bearer <jwt_token>
+```
+
+### Additional Endpoints
+
+#### Get Pending Tasks
+```http
+GET /go
+Authorization: Bearer <jwt_token>
+```
+
+#### Get Missed Topics
+```http
+GET /missed
+Authorization: Bearer <jwt_token>
+```
+
+#### Get Completed Topics
+```http
+GET /completed
+Authorization: Bearer <jwt_token>
+```
+
+## 🗄️ Database Schema
+
+### User Table
+```sql
+CREATE TABLE user_table (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(255),
+    email VARCHAR(255) NOT NULL
+);
+```
+
+### Topic Table
+```sql
+CREATE TABLE topic (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    subject VARCHAR(255),
+    created_date DATE,
+    revise3_date DATE,
+    revise7_date DATE,
+    is_revised3 BOOLEAN DEFAULT FALSE,
+    is_revised7 BOOLEAN DEFAULT FALSE,
+    is_completed BOOLEAN DEFAULT FALSE,
+    user_id BIGINT,
+    FOREIGN KEY (user_id) REFERENCES user_table(id)
+);
+```
+
+### Notification Table
+```sql
+CREATE TABLE notification (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    message TEXT,
+    notify_date DATE,
+    is_sent BOOLEAN DEFAULT FALSE,
+    active BOOLEAN DEFAULT FALSE,
+    sent_at DATE,
+    topic_id BIGINT,
+    users_id BIGINT,
+    FOREIGN KEY (topic_id) REFERENCES topic(id),
+    FOREIGN KEY (users_id) REFERENCES user_table(id)
+);
+```
+
+## 🔧 Configuration
 
 ### Environment Profiles
-Switch between environments by setting:
+
+The application supports multiple profiles:
+
+- **`dev`** (default): Development configuration with debug logging
+- **`prod`**: Production configuration with optimized settings
+
+Switch profiles:
+```bash
+java -jar target/rewise-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+```
+
+### Connection Pool Configuration
+
 ```properties
-spring.profiles.active=dev  # or prod
+# HikariCP Settings
+spring.datasource.hikari.maximum-pool-size=20
+spring.datasource.hikari.minimum-idle=5
+spring.datasource.hikari.idle-timeout=300000
+spring.datasource.hikari.connection-timeout=20000
 ```
 
 ### Logging Configuration
-
-The application includes comprehensive logging setup:
 
 ```properties
 # Application Logging
 logging.level.com.example.rewise=DEBUG
 logging.level.org.springframework.security=DEBUG
 logging.level.org.hibernate.SQL=DEBUG
-logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
 
 # Log Patterns
 logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} - %msg%n
-logging.pattern.file=%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
 ```
-
-### Development Tools
-
-```properties
-# Spring DevTools Configuration
-spring.devtools.restart.enabled=true
-spring.devtools.livereload.enabled=true
-spring.devtools.restart.additional-paths=src/main/java
-
-# Error Handling
-server.error.include-message=always
-server.error.include-binding-errors=always
-server.error.include-stacktrace=on_param
-server.error.include-exception=false
-```
-
-## 🔒 Security Features
-
-- **Authentication:** Basic Auth (development) / JWT (production ready)
-- **Password Encoding:** BCrypt
-- **Role-based Access Control:** ADMIN role configured
-- **CORS:** Configurable cross-origin resource sharing
-- **CSRF:** Protection enabled by default
-
-## 📊 Logging
-
-The application includes comprehensive logging:
-- **Console Logging:** Formatted output for development
-- **File Logging:** Structured logs for production
-- **SQL Logging:** Hibernate query logging (development)
-- **Security Logging:** Authentication and authorization events
-
-**Log Levels:**
-- `DEBUG` - Application and security events
-- `DEBUG` - Hibernate SQL queries
-- `TRACE` - SQL parameter binding details
 
 ## 🧪 Testing
 
-Run tests with:
+Run the test suite:
 ```bash
 mvn test
 ```
 
-The project includes:
-- Unit tests for services and repositories
-- Integration tests for controllers
-- Security tests for authentication
+Run with coverage:
+```bash
+mvn test jacoco:report
+```
+
+### Test Structure
+- **Unit Tests**: Service layer testing
+- **Integration Tests**: Controller and repository testing
+- **Security Tests**: Authentication and authorization
 
 ## 🚀 Deployment
 
-### Development
+### Development Deployment
 ```bash
 mvn spring-boot:run
 ```
 
-### Production
+### Production Deployment
 ```bash
-mvn clean package
+# Build for production
+mvn clean package -Dspring.profiles.active=prod
+
+# Run the JAR
 java -jar target/rewise-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 ```
 
-## 📈 Future Enhancements
-
-As the project expands, planned features include:
-- JWT-based authentication
-- RESTful API documentation with Swagger/OpenAPI
-- Caching with Redis
-- Message queuing with RabbitMQ
-- Microservices architecture
-- Docker containerization
-- CI/CD pipeline integration
-- Database migration tools (Flyway/Liquibase)
-- Enhanced monitoring and metrics
-
-## 📋 Commit Guidelines
-
-When making commits to this repository, please follow these guidelines:
-
-1. **Update Version:** Update the version in `pom.xml` and README.md if making significant changes
-2. **Database Changes:** Document any database schema changes in commit messages
-3. **Configuration Changes:** Note any new properties added to `application.properties`
-4. **Update README:** Keep the Version History table updated with commit dates and changes
-
-### Commit Message Format
+### Docker Deployment (Planned)
+```dockerfile
+FROM openjdk:17-jdk-alpine
+COPY target/rewise-0.0.1-SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/app.jar"]
 ```
-[FEATURE/BUGFIX/DOCS] Brief description
 
-- Detailed change 1
-- Detailed change 2
-- Database changes (if any)
-- Configuration updates (if any)
-```
+## 🔄 Spaced Repetition Algorithm
+
+reWise implements a **modified spaced repetition algorithm**:
+
+1. **Initial Learning**: Topic created on Day 0
+2. **First Revision**: Scheduled for Day 3
+3. **Second Revision**: Scheduled for Day 7
+4. **Completion**: Topic marked complete after both revisions
+
+### Notification System
+- Automated notifications created for each revision date
+- Email reminders sent via external email service
+- Notification status tracking and management
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+We welcome contributions! Please follow these steps:
+
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+3. **Commit** your changes: `git commit -m 'Add amazing feature'`
+4. **Push** to the branch: `git push origin feature/amazing-feature`
+5. **Open** a Pull Request
+
+### Development Guidelines
+- Follow Java coding standards
+- Write comprehensive unit tests
+- Update documentation for API changes
+- Use meaningful commit messages
+
+### Commit Message Format
+```
+[FEATURE/BUGFIX/DOCS/REFACTOR] Brief description
+
+- Detailed change description
+- Impact on existing functionality
+- Database changes (if any)
+```
+
+## 📈 Roadmap
+
+### Phase 1 (Current)
+- ✅ Basic spaced repetition functionality
+- ✅ User authentication and authorization
+- ✅ Topic CRUD operations
+- ✅ Notification scheduling
+
+### Phase 2 (Upcoming)
+- 🔄 JWT-based authentication
+- 🔄 REST API documentation (Swagger/OpenAPI)
+- 🔄 Advanced analytics and progress tracking
+- 🔄 Mobile app companion
+
+### Phase 3 (Future)
+- 🔄 Microservices architecture
+- 🔄 Docker containerization
+- 🔄 CI/CD pipeline
+- 🔄 Advanced ML-based scheduling algorithms
+
+## 📊 Monitoring & Metrics
+
+### Application Metrics
+- Request/response times
+- Database connection pool status
+- Memory and CPU usage
+- Error rates and exceptions
+
+### Learning Analytics
+- Topic completion rates
+- Revision success patterns
+- User engagement metrics
+- Study streak tracking
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Database Connection Failed**
+```bash
+# Check MySQL service status
+sudo systemctl status mysql
+
+# Verify connection
+mysql -u root -p -e "SELECT 1;"
+```
+
+**Port Already in Use**
+```bash
+# Find process using port 8080
+lsof -i :8080
+
+# Kill the process
+kill -9 <PID>
+```
+
+**JWT Token Issues**
+- Ensure token is included in Authorization header
+- Check token expiration (default: 24 hours)
+- Verify token format: `Bearer <token>`
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Spring Boot Team** for the excellent framework
+- **Spaced Repetition Research** community for learning methodologies
+- **Open Source Contributors** for their valuable contributions
 
 ## 📞 Support
 
 For support and questions:
-- Create an issue in the repository
-- Contact the development team
-- Check the documentation in the `/docs` folder
-
-## 🔄 Updating the README
-
-This README is designed to be easily maintainable across commits:
-
-1. **Version History Table:** Add new rows with each significant commit
-2. **Database Properties:** Update if connection pool or Hibernate settings change
-3. **Configuration Section:** Add new properties as they're introduced
-4. **Future Enhancements:** Move completed items to relevant sections
+- 📧 **Email**: [your-email@example.com]
+- 🐛 **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
+- 📖 **Documentation**: [Wiki](https://github.com/your-repo/wiki)
 
 ---
 
-**Note:** This README will be updated as the project expands with new features and capabilities. Always refer to the latest version for accurate information.
+<div align="center">
 
-**Last Updated:** 2025-12-16 | **Current Version:** 1.3.7
+**Made with ❤️ for efficient learning**
+
+⭐ Star this repo if you find it helpful!
+
+[⬆️ Back to Top](#-rewise---spaced-repetition-learning-platform)
+
+</div>

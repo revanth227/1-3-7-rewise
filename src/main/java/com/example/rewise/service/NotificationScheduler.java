@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -57,39 +58,74 @@ public class NotificationScheduler {
 
     @Scheduled(cron = "0 */1 * * * * ")
     public void sentNotifications() {
+
         LocalDate today = LocalDate.now(clock);
+
         List<Notification> notifications =
                 notificationRepo.findByNotifyDateAndActiveAndIsSent(today, true, false);
+
         for (Notification notification : notifications) {
+
             if (notification.getTopic().isCompleted()) {
-                continue;}
-            if (notification.getUser() != null && notification.getUser().getEmail() != null) {
-                MailDto mailDto = new MailDto(notification.getUser().getEmail(), "Reminder", notification.getMessage());
-                String url = emailServiceUrl;
-                try {ResponseEntity<MailResponseDto> response = restTemplate.postForEntity(url,mailDto, MailResponseDto.class);
-                    if (response.getStatusCode().is2xxSuccessful()) {
-                        notification.setSentAt(today);
-                        notification.setActive(false);
-                        notification.setSent(true);
-                        notificationRepo.save(notification);
-                        logger.info("Mail sent successfully to {} for notification {}",
-                                notification.getUser().getEmail(),
-                                notification.getId());
-                    } else {
-                        notification.setActive(true);
-                        notification.setSent(false);
-                        notificationRepo.save(notification);
-                    }
-                } catch (Exception ex) {
-                    logger.error("Failed to send mail to {} for notification {}",
-                            notification.getUser().getEmail(), notification.getId(), ex);
-                    notification.setActive(true);
-                    notification.setSent(false);
-                    notificationRepo.save(notification);
-                }
+                continue;
             }
+
+            if (notification.getRetryCount() >= 3) {
+                notification.setActive(false);
+                notification.setLastAttempt(LocalDateTime.now(clock));
+                notificationRepo.save(notification);
+                continue;
+            }
+
+            notification.setLastAttempt(LocalDateTime.now(clock));
+
+            try {
+                if (notification.getUser() == null || notification.getUser().getEmail() == null) {
+                    throw new IllegalStateException("User or email missing");
+                }
+                MailDto mailDto = new MailDto(
+                        notification.getUser().getEmail(),
+                        "Reminder",
+                        notification.getMessage()
+                );
+
+                ResponseEntity<MailResponseDto> response =
+                        restTemplate.postForEntity(
+                                emailServiceUrl,
+                                mailDto,
+                                MailResponseDto.class
+                        );
+
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    notification.setSentAt(today);
+                    notification.setSent(true);
+                    notification.setActive(false);
+                    logger.info(
+                            "Mail sent successfully to {} for notification {}",
+                            notification.getUser().getEmail(),
+                            notification.getId()
+                    );
+
+                } else {
+                    handleRetry(notification);
+                }
+            } catch (Exception ex) {
+                handleRetry(notification);
+                logger.error(
+                        "Failed to send mail to {} for notification {}",
+                        notification.getUser().getEmail(),
+                        notification.getId(),
+                        ex);
+            }
+            notificationRepo.save(notification);
         }
         logger.info("Notification scheduler finished");
+    }
+
+    private void handleRetry(Notification notification) {
+        notification.setRetryCount(notification.getRetryCount() + 1);
+        notification.setSent(false);
+        notification.setActive(notification.getRetryCount() < 3);
     }
 
 
