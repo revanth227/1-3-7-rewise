@@ -56,8 +56,8 @@ public class NotificationScheduler {
     }
 
 
-    @Scheduled(cron = "0 */1 * * * * ")
-    public void sentNotifications() {
+    @Scheduled(cron = "0 */1 * * * *")
+    public void sendNotifications() {
 
         LocalDate today = LocalDate.now(clock);
 
@@ -67,66 +67,87 @@ public class NotificationScheduler {
         for (Notification notification : notifications) {
 
             if (notification.getTopic().isCompleted()) {
+                notification.setActive(false);
+                notificationRepo.save(notification);
                 continue;
             }
 
             if (notification.getRetryCount() >= 3) {
                 notification.setActive(false);
-                notification.setLastAttempt(LocalDateTime.now(clock));
+                notification.setSent(false);
+                notificationRepo.save(notification);
+                logger.warn("Max retry reached for notification {}", notification.getId());
+                continue;
+            }
+
+            if (notification.getUser() == null || notification.getUser().getEmail() == null) {
+                logger.error("User/email missing for notification {}", notification.getId());
+                notification.setActive(false);
                 notificationRepo.save(notification);
                 continue;
             }
 
-            notification.setLastAttempt(LocalDateTime.now(clock));
+            MailDto mailDto = new MailDto(
+                    notification.getUser().getEmail(),
+                    "Reminder",
+                    notification.getMessage()
+            );
 
             try {
-                if (notification.getUser() == null || notification.getUser().getEmail() == null) {
-                    throw new IllegalStateException("User or email missing");
-                }
-                MailDto mailDto = new MailDto(
-                        notification.getUser().getEmail(),
-                        "Reminder",
-                        notification.getMessage()
-                );
-
                 ResponseEntity<MailResponseDto> response =
-                        restTemplate.postForEntity(
-                                emailServiceUrl,
-                                mailDto,
-                                MailResponseDto.class
-                        );
+                        restTemplate.postForEntity(emailServiceUrl, mailDto, MailResponseDto.class);
 
                 if (response.getStatusCode().is2xxSuccessful()) {
-                    notification.setSentAt(today);
                     notification.setSent(true);
                     notification.setActive(false);
-                    logger.info(
-                            "Mail sent successfully to {} for notification {}",
-                            notification.getUser().getEmail(),
-                            notification.getId()
-                    );
+                    notification.setSentAt(today);
+                    notificationRepo.save(notification);
 
+                    logger.info("Mail sent successfully to {} for notification {}",
+                            notification.getUser().getEmail(),
+                            notification.getId());
                 } else {
                     handleRetry(notification);
                 }
+
             } catch (Exception ex) {
+                logger.error("Mail sending failed for notification {}",
+                        notification.getId(), ex);
                 handleRetry(notification);
-                logger.error(
-                        "Failed to send mail to {} for notification {}",
-                        notification.getUser().getEmail(),
-                        notification.getId(),
-                        ex);
             }
-            notificationRepo.save(notification);
         }
+
         logger.info("Notification scheduler finished");
     }
 
     private void handleRetry(Notification notification) {
         notification.setRetryCount(notification.getRetryCount() + 1);
-        notification.setSent(false);
-        notification.setActive(notification.getRetryCount() < 3);
+        notification.setLastAttempt(LocalDateTime.now(clock));
+
+        if (notification.getRetryCount() >= 3) {
+            notification.setActive(false);
+            notification.setSent(false);
+            logger.warn("Giving up notification {} after max retries", notification.getId());
+        } else {
+            notification.setActive(true);
+            notification.setSent(false);
+            logger.info("Retrying notification {} (attempt {})",
+                    notification.getId(),
+                    notification.getRetryCount());
+        }
+
+        notificationRepo.save(notification);
     }
 
 
+
 }
+//git checkout -b newBranch
+//# work
+//git add .
+//git commit -m "message"
+//git push origin newBranch
+//# PR → review → merge (GitHub)
+//git checkout main
+//git pull origin main
+//git branch -d newBranch
