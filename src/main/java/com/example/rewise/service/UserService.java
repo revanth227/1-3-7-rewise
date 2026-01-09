@@ -50,21 +50,7 @@ public class UserService implements UserDetailsService {
         return userRepo.save(user);
     }
 
-    public void sendWelcomeMail(User user) {
-        try {
-            MailDto mailDto = new MailDto(
-                    user.getEmail(),
-                    "Login Successful",
-                    "Welcome To The ReWISE"
-            );
 
-            String url = "http://localhost:8081/email/send";
-            restTemplate.postForEntity(url, mailDto, MailResponseDto.class);
-
-        } catch (Exception e) {
-            System.out.println("Welcome mail failed for user: " + user.getEmail());
-        }
-    }
 
 
     @Override

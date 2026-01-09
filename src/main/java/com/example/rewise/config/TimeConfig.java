@@ -10,7 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Clock;
 
 @Configuration
-public class TimeConfig {
+public class  TimeConfig {
 
     @Bean
     public Clock clock() {
