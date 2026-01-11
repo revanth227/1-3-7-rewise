@@ -13,6 +13,7 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
+                .addServersItem(new io.swagger.v3.oas.models.servers.Server().url("https://1-3-7-rewise-production.up.railway.app"))
                 .addSecurityItem(new SecurityRequirement().addList("BearerAuthentication"))
                 .components(new Components().addSecuritySchemes("BearerAuthentication", createSecurityScheme()));
     }
