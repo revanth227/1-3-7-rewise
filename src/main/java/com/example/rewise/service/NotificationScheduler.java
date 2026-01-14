@@ -56,7 +56,7 @@ public class NotificationScheduler {
     }
 
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0/15 * * * *")
     public void sendNotifications() {
 
         LocalDate today = LocalDate.now(clock);
