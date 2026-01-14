@@ -39,7 +39,7 @@ public class NotificationScheduler {
     private String emailServiceUrl;
 
 
-    @Scheduled(cron = "0 5 0 * * *", zone = "UTC")
+    @Scheduled(cron = "0 5 0 * * *")
     public void activateTodayNotifications() {
         LocalDate today = LocalDate.now(clock);
         List<Notification> pending = notificationRepo
@@ -56,7 +56,7 @@ public class NotificationScheduler {
     }
 
 
-    @Scheduled(cron = "0 */15 7-23 * * *", zone = "UTC")
+    @Scheduled(cron = "0 */15 7-23 * * *")
     public void sendNotifications() {
 
         LocalDate today = LocalDate.now(clock);
