@@ -19,7 +19,7 @@ public class NotificationController {
     private NotificationService notificationService;
 
     @GetMapping("/today/notifications")
-    public Page<Notification> getAll(Pageable pageable) {
+    public Page<Notification> getAll(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         return notificationService.getTodayNotifications( pageable);
     }
 
@@ -27,7 +27,7 @@ public class NotificationController {
     public Page<NotificationResponse> notificationList(
                                                        @RequestParam(required = false) Long topicId,
                                                        @RequestParam(required = false) LocalDate date,
-                                                       Pageable pageable
+                                                       @org.springdoc.core.annotations.ParameterObject Pageable pageable
 
     ) throws AccessDeniedException {
         if (topicId != null) {
