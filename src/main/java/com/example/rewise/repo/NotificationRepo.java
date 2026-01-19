@@ -23,7 +23,7 @@ public interface NotificationRepo extends JpaRepository<Notification, Long> {
 
     Page<Notification> findByIsSent(boolean b, Pageable pageable);
 
-    Page<Notification> findByUserAndNotifyDateAndIsSent(User user, LocalDate date, boolean isSent, Pageable pageable);
+    Page<Notification> findByUserAndNotifyDateAndIsSent(User user, LocalDate date, boolean isSent,Pageable pageable);
 
     Topic findByTopicId(Long topicId);
 

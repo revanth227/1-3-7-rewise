@@ -14,8 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.time.Clock;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 public class NotificationService {
 
     @Autowired
@@ -45,7 +48,6 @@ public class NotificationService {
     public Page<Notification> getTodayNotifications(Pageable pageable) {
 
         User user = getCurrentUser();
-
         LocalDate today = LocalDate.now(clock);
 
         Page<Notification> notificationPage =
@@ -73,6 +75,10 @@ public class NotificationService {
                 .orElseThrow(() ->
                         new TopicNotFound("No Topic Found By The Id " + topicId));
 
+        if (findTopic.getUser() == null || !findTopic.getUser().getName().equals(user.getName())) {
+            throw new AccessDeniedException("Topic not owned by user");
+        }
+
         Page<Notification> notifications =
                 notificationRepo.findByUserAndIsSentAndTopic(
                         user,
@@ -80,10 +86,6 @@ public class NotificationService {
                         findTopic,
                         pageable
                 );
-
-        if (!findTopic.getUser().getName().equals(user.getName())) {
-            throw new AccessDeniedException("Topic not owned by user");
-        }
 
         return mapToResponsePage(notifications, pageable);
     }
@@ -121,15 +123,17 @@ public class NotificationService {
 
 
     private User getCurrentUser() {
-        String username = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new UserNotFound("User session not found or not authenticated");
+        }
+
+        String username = authentication.getName();
         User user = userRepo.findByName(username);
 
         if (user == null) {
-            throw new UserNotFound("No User Found");
+            throw new UserNotFound("No User Found with name: " + username);
         }
 
         return user;
@@ -146,8 +150,12 @@ public class NotificationService {
             Topic topic = notification.getTopic();
 
             NotificationResponse response = new NotificationResponse();
-            response.setTopicTitle(topic.getTitle());
-            response.setSubject(topic.getSubject());
+
+            if (topic != null) {
+                response.setTopicTitle(topic.getTitle());
+                response.setSubject(topic.getSubject());
+            }
+
             response.setSentAt(notification.getSentAt());
             response.setNotifyDate(notification.getNotifyDate());
             response.setMessage(notification.getMessage());
