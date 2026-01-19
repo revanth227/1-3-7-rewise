@@ -32,12 +32,12 @@ public interface NotificationRepo extends JpaRepository<Notification, Long> {
 
     List<Notification> findByTopicAndIsSent(Topic topic, boolean b);
 
-    Page<Notification> findByUserAndIsSentAndTopic(User user, boolean b, Pageable pageable, Topic topicId);
+    Page<Notification> findByUserAndIsSentAndTopic(User user, boolean b,  Topic topicId,Pageable pageable);
 
     Page<Notification> findByUserAndIsSent(User user, boolean isSent, Pageable pageable);
 
 
     List<Notification> findByNotifyDateAndActiveAndIsSent(LocalDate today, boolean b, boolean b1);
 
-    Page<Notification> findByUserAndIsSentAndSentAt(User user, boolean b, Pageable pageable, LocalDate date);
+    Page<Notification> findByUserAndIsSentAndSentAt(User user, boolean b,  LocalDate date,Pageable pageable);
 }

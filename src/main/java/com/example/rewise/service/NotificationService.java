@@ -41,21 +41,20 @@ public class NotificationService {
         this.clock = clock;
     }
 
+
     public Page<Notification> getTodayNotifications(Pageable pageable) {
 
+        User user = getCurrentUser();
+
         LocalDate today = LocalDate.now(clock);
-        String username = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
-        User user = userRepo.findByName(username);
-        if (user == null) {
-            throw new UserNotFound("No User FOund");
 
-        }
-
-        Page<Notification> notificationPage = notificationRepo
-                .findByUserAndNotifyDateAndIsSent(user, today, false, pageable);
+        Page<Notification> notificationPage =
+                notificationRepo.findByUserAndNotifyDateAndIsSent(
+                        user,
+                        today,
+                        false,
+                        pageable
+                );
 
         if (notificationPage.isEmpty()) {
             throw new NoItems("No Notifications to display");
@@ -65,96 +64,101 @@ public class NotificationService {
     }
 
 
-    public Page<NotificationResponse> history(Pageable pageable, Long topicId) throws AccessDeniedException {
-        String username = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
-        User user = userRepo.findByName(username);
-        if (user == null) {
-            throw new UserNotFound("No User Found");
+    public Page<NotificationResponse> history(Long topicId, Pageable pageable)
+            throws AccessDeniedException {
 
-        }
+        User user = getCurrentUser();
+
         Topic findTopic = topicRepo.findById(topicId)
-                .orElseThrow(() -> new TopicNotFound("No Topic Found By The Id " + topicId));
+                .orElseThrow(() ->
+                        new TopicNotFound("No Topic Found By The Id " + topicId));
 
-        Page<Notification> notifications = notificationRepo
-                .findByUserAndIsSentAndTopic(user, true, pageable, findTopic);
+        Page<Notification> notifications =
+                notificationRepo.findByUserAndIsSentAndTopic(
+                        user,
+                        true,
+                        findTopic,
+                        pageable
+                );
 
-        List<NotificationResponse> notificationList = new ArrayList<>();
-        for (Notification notification : notifications.getContent()) {
-            if (!findTopic.getUser().getName().equals(username)) {
-                throw new AccessDeniedException("Topic not owned by user");
-            }
-
-            Topic topic = notification.getTopic();
-            NotificationResponse response = new NotificationResponse();
-            response.setTopicTitle(topic.getTitle());
-            response.setSubject(topic.getSubject());
-            response.setSentAt(notification.getSentAt());
-            response.setNotifyDate(notification.getNotifyDate());
-            response.setMessage(notification.getMessage());
-
-            notificationList.add(response);
+        if (!findTopic.getUser().getName().equals(user.getName())) {
+            throw new AccessDeniedException("Topic not owned by user");
         }
 
-        return new PageImpl<>(notificationList, pageable, notifications.getTotalElements());
+        return mapToResponsePage(notifications, pageable);
     }
 
-    public Page<NotificationResponse> history(Pageable pageable, LocalDate date) {
 
-        String username = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
-        User user = userRepo.findByName(username);
-        if (user == null) {
-            throw new UserNotFound("No User FOund");
+    public Page<NotificationResponse> history(LocalDate date, Pageable pageable) {
 
-        }
+        User user = getCurrentUser();
 
-        Page<Notification> notifications = notificationRepo
-                .findByUserAndIsSentAndSentAt(user, true, pageable, date);
+        Page<Notification> notifications =
+                notificationRepo.findByUserAndIsSentAndSentAt(
+                        user,
+                        true,
+                        date,
+                        pageable
+                );
 
-        List<NotificationResponse> notificationList = new ArrayList<>();
-        for (Notification notification : notifications.getContent()) {
-            Topic topic = notification.getTopic();
-            NotificationResponse response = new NotificationResponse();
-            response.setTopicTitle(topic.getTitle());
-            response.setSubject(topic.getSubject());
-            response.setSentAt(notification.getSentAt());
-            response.setNotifyDate(notification.getNotifyDate());
-            response.setMessage(notification.getMessage());
-
-            notificationList.add(response);
-        }
-
-        return new PageImpl<>(notificationList, pageable, notifications.getTotalElements());
+        return mapToResponsePage(notifications, pageable);
     }
+
 
     public Page<NotificationResponse> history(Pageable pageable) {
+
+        User user = getCurrentUser();
+
+        Page<Notification> notifications =
+                notificationRepo.findByUserAndIsSent(
+                        user,
+                        true,
+                        pageable
+                );
+
+        return mapToResponsePage(notifications, pageable);
+    }
+
+
+    private User getCurrentUser() {
         String username = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getName();
-        User user = userRepo.findByName(username);
-        if (user == null) {
-            throw new UserNotFound("No User FOund");
 
+        User user = userRepo.findByName(username);
+
+        if (user == null) {
+            throw new UserNotFound("No User Found");
         }
-        Page<Notification> notifications = notificationRepo
-                .findByUserAndIsSent(user, true, pageable);
-        List<NotificationResponse> notificationList = new ArrayList<>();
+
+        return user;
+    }
+
+    private Page<NotificationResponse> mapToResponsePage(
+            Page<Notification> notifications,
+            Pageable pageable
+    ) {
+
+        List<NotificationResponse> responseList = new ArrayList<>();
+
         for (Notification notification : notifications.getContent()) {
             Topic topic = notification.getTopic();
+
             NotificationResponse response = new NotificationResponse();
             response.setTopicTitle(topic.getTitle());
             response.setSubject(topic.getSubject());
             response.setSentAt(notification.getSentAt());
             response.setNotifyDate(notification.getNotifyDate());
             response.setMessage(notification.getMessage());
-            notificationList.add(response);
+
+            responseList.add(response);
         }
-        return new PageImpl<>(notificationList, pageable, notifications.getTotalElements());
+
+        return new PageImpl<>(
+                responseList,
+                pageable,
+                notifications.getTotalElements()
+        );
     }
 }

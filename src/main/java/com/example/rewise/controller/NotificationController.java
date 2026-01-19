@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,16 +25,16 @@ public class NotificationController {
 
     @GetMapping("/notifications/history")
     public Page<NotificationResponse> notificationList(
-                                                       Pageable pageable,
                                                        @RequestParam(required = false) Long topicId,
-                                                       @RequestParam(required = false) LocalDate date
+                                                       @RequestParam(required = false) LocalDate date,
+                                                       Pageable pageable
 
     ) throws AccessDeniedException {
         if (topicId != null) {
-            return notificationService.history( pageable, topicId);
+            return notificationService.history( topicId,pageable);
         }
         if (date != null) {
-            return notificationService.history( pageable, date);
+            return notificationService.history( date,pageable);
         }
         return notificationService.history( pageable);
     }
