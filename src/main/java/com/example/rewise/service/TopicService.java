@@ -39,6 +39,8 @@ public class TopicService {
         this.clock = clock;
     }
 
+
+
     public List<ResponseDto> getAllByUserId() {
         String username = SecurityContextHolder
                 .getContext()

@@ -2,11 +2,8 @@ package com.example.rewise.controller;
 
 import com.example.rewise.dto.RequestDto;
 import com.example.rewise.dto.ResponseDto;
-import com.example.rewise.entity.User;
 import com.example.rewise.service.TopicService;
-import jakarta.validation.groups.Default;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +14,7 @@ public class TopicController {
     private TopicService topicService;
 
 
-    @GetMapping("/topics")
+    @GetMapping("/topics/me")
     public List<ResponseDto> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
@@ -32,18 +29,18 @@ public class TopicController {
         return topicService.getAllByUserId();
     }
 
-    @GetMapping("/user")
-    public List<ResponseDto> getAllByUserId() {
-        return topicService.getAllByUserId();
-    }
+//    @GetMapping("/topics/me")
+//    public List<ResponseDto> getAllByUserId() {
+//        return topicService.getAllByUserId();
+//    }
 
 
-    @PostMapping("/add")
+    @PostMapping("/topics")
     public ResponseDto createTopic(@RequestBody RequestDto requestDto) {
         return topicService.create(requestDto);
     }
 
-    @GetMapping("/today")
+    @GetMapping("/topics/today")
     public List<ResponseDto> findTodayPending() {
         return topicService.getTodayTasks();
     }
@@ -53,28 +50,28 @@ public class TopicController {
         return topicService.updateIsRevised(id, day);
     }
 
-    @DeleteMapping("delete/{id}")
+    @DeleteMapping("/topics/{id}")
     public String deleteById(@PathVariable long id) {
         return topicService.removeById(id);
     }
 
-    @GetMapping("/id/{id}")
+    @GetMapping("/topics/{id}")
     public ResponseDto getTheNotification(@PathVariable Long id) {
         return topicService.getTheTopic(id);
     }
 
-    @GetMapping("/go")
+    @GetMapping("/topics/pending")
     public List<ResponseDto> todayPending() {
         return topicService.allPendingList();
 
     }
 
-    @GetMapping("/missed")
+    @GetMapping("/topics/missed")
     public List<ResponseDto> missedTopics(){
         return topicService.missedTopicsService();
     }
 
-    @GetMapping("/completed")
+    @GetMapping("/topics/completed")
     public List<ResponseDto> allCompleted(){
         return topicService.allCompletedService();
     }

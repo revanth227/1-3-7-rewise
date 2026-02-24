@@ -18,7 +18,7 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    @GetMapping("/today/notifications")
+    @GetMapping("/notifications/today")
     public Page<Notification> getAll(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         return notificationService.getTodayNotifications( pageable);
     }
